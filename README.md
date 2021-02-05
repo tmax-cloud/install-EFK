@@ -6,6 +6,23 @@
 * kibana ([docker.elastic.co/kibana/kibana:7.2.0](https://www.docker.elastic.co/r/kibana/kibana?limit=50&offset=0&show_snapshots=false))
 * fluentd ([fluent/fluentd-kubernetes-daemonset:v1.4.2-debian-elasticsearch-1.1](https://hub.docker.com/layers/fluent/fluentd-kubernetes-daemonset/v1.4.2-debian-elasticsearch-1.1/images/sha256-ce4885865850d3940f5e5318066897b8502c0b955066392de7fd4ef6f1fd4275?context=explore))
 * busybox ([busybox:1.32.0](https://hub.docker.com/layers/busybox/library/busybox/1.32.0/images/sha256-414aeb860595d7078cbe87abaeed05157d6b44907fbd7db30e1cfba9b6902448?context=explore))
+
+## 쉘 스크립트 자동 설치
+1. EFK_install.sh 실행  
+    * EFK_install.sh를 실행한다.
+    ```bash
+    $ ./EFK_install.sh
+    ```
+* 비고  
+    * Container Runtime과 StorageClass Name을 파라미터로 받을 수 있다.  
+    $1 = Container Runtime (default = docker)  
+    $2 = StorageClass Name (default = csi-cephfs-sc)  
+    * 예시
+    ```bash
+    $ ./EFK_install.sh crio rook-cephfs
+    ```
+
+## 수동 설치
 ## Prerequisites
 1. Namespace 생성
     * EFK를 설치할 namespace를 생성한다.
@@ -19,6 +36,7 @@
     $ export KIBANA_VERSION=7.2.0
     $ export FLUENTD_VERSION=v1.4.2-debian-elasticsearch-1.1
     $ export BUSYBOX_VERSION=1.32.0
+    $ export STORAGECLASS_NAME=csi-cephfs-sc
     ```
 
 * 비고  
@@ -81,6 +99,7 @@
 	```bash
 	$ sed -i 's/{busybox_version}/'${BUSYBOX_VERSION}'/g' 01_elasticsearch.yaml
 	$ sed -i 's/{es_version}/'${ES_VERSION}'/g' 01_elasticsearch.yaml
+    $ sed -i 's/{storageclass_name}/'${STORAGECLASS_NAME}'/g' 01_elasticsearch.yaml
 	$ sed -i 's/{kibana_version}/'${KIBANA_VERSION}'/g' 02_kibana.yaml
 	$ sed -i 's/{fluentd_version}/'${FLUENTD_VERSION}'/g' 03_fluentd.yaml
 	```
