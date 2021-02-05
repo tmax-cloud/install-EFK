@@ -7,6 +7,22 @@
 * fluentd ([fluent/fluentd-kubernetes-daemonset:v1.4.2-debian-elasticsearch-1.1](https://hub.docker.com/layers/fluent/fluentd-kubernetes-daemonset/v1.4.2-debian-elasticsearch-1.1/images/sha256-ce4885865850d3940f5e5318066897b8502c0b955066392de7fd4ef6f1fd4275?context=explore))
 * busybox ([busybox:1.32.0](https://hub.docker.com/layers/busybox/library/busybox/1.32.0/images/sha256-414aeb860595d7078cbe87abaeed05157d6b44907fbd7db30e1cfba9b6902448?context=explore))
 ## Prerequisites
+1. Namespace 생성
+    * EFK를 설치할 namespace를 생성한다.
+    ```bash
+    $ kubectl create ns kube-logging
+    ```
+2. 버전 export
+    * 다운 받을 버전을 export한다. 
+    ```bash
+    $ export ES_VERSION=7.2.0
+    $ export KIBANA_VERSION=7.2.0
+    $ export FLUENTD_VERSION=v1.4.2-debian-elasticsearch-1.1
+    $ export BUSYBOX_VERSION=1.32.0
+    ```
+
+* 비고  
+    * 이하 인스톨 가이드는 StorageClass 이름이 csi-cephfs-sc 라는 가정하에 진행한다.
 
 ## 폐쇄망 설치 가이드
 설치를 진행하기 전 아래의 과정을 통해 필요한 이미지 및 yaml 파일을 준비한다.
@@ -16,10 +32,6 @@
     ```bash
     $ mkdir -p ~/efk-install
     $ export EFK_HOME=~/efk-install
-    $ export ES_VERSION=7.2.0
-    $ export KIBANA_VERSION=7.2.0
-    $ export FLUENTD_VERSION=v1.4.2-debian-elasticsearch-1.1
-    $ export BUSYBOX_VERSION=1.32.0
     $ cd $EFK_HOME
     ```
     * 외부 네트워크 통신이 가능한 환경에서 필요한 이미지를 다운받는다.
@@ -71,7 +83,6 @@
 	$ sed -i 's/{es_version}/'${ES_VERSION}'/g' 01_elasticsearch.yaml
 	$ sed -i 's/{kibana_version}/'${KIBANA_VERSION}'/g' 02_kibana.yaml
 	$ sed -i 's/{fluentd_version}/'${FLUENTD_VERSION}'/g' 03_fluentd.yaml
-	
 	```
 * 비고 :
     * `폐쇄망에서 설치를 진행하여 별도의 image registry를 사용하는 경우 registry 정보를 추가로 설정해준다.`
@@ -84,14 +95,19 @@
 ## Step 1. ElasticSearch 설치
 * 목적 : `ElasticSearch 설치`
 * 생성 순서 : 
-    * EFK를 설치할 Namespace를 생성한다.
+    * [01_elasticsearch.yaml](yaml/01_elasticsearch.yaml) 실행
 	```bash
-	$ kubectl create ns kube-logging
+	$ kubectl apply -f 01_elasticsearch.yaml
 	```     
-    * [01_elasticsearch.yaml](yaml/01_elasticsearch.yaml) 실행 `ex) kubectl apply -f 01_elasticsearch.yaml`
+* 비고 :
+    * StorageClass 이름이 csi-cephfs-sc가 아니라면 환경에 맞게 수정해야 한다.
+
 ## Step 2. kibana 설치
 * 목적 : `EFK의 UI 모듈인 kibana를 설치`
-* 생성 순서 : [02_kibana.yaml](yaml/02_kibana.yaml) 실행 `ex) kubectl apply -f 02_kibana.yaml`
+* 생성 순서 : [02_kibana.yaml](yaml/02_kibana.yaml) 실행 
+    ```bash
+    $ kubectl apply -f 02_kibana.yaml
+    ```
 * 비고 :
     * kibana pod가 running임을 확인한 뒤 http://$KIBANA_URL에 접속해 정상 동작을 확인한다.
     * $KIBANA_URL은 `kubectl get svc -n kube-logging | grep kibana`를 통해 조회 가능
@@ -99,7 +115,12 @@
 
 ## Step 3. fluentd 설치
 * 목적 : `EFK의 agent daemon 역할을 수행하는 fluentd를 설치`
-* 생성 순서 : [03_fluentd.yaml](yaml/03_fluentd.yaml) 실행 `ex) kubectl apply -f 03_fluentd.yaml`
+* 생성 순서 : [03_fluentd.yaml](yaml/03_fluentd.yaml) 실행 
+    ```bash
+    $ kubectl apply -f 03_fluentd.yaml
+    ```
 * 비고 :
-    * 만약 해당 Kube 환경의 Container Runtime이 Docker가 아니라 CRI-O일 경우, [03_fluentd_cri-o.yaml](yaml/03_fluentd_cri-o.yaml) 실행 `ex) kubectl apply -f 03_fluentd_cri-o.yaml`
-
+    * 만약 해당 k8s 환경의 Container Runtime이 Docker가 아니라 CRI-O일 경우, [03_fluentd_cri-o.yaml](yaml/03_fluentd_cri-o.yaml) 실행
+    ``` bash
+    $ kubectl apply -f 03_fluentd_cri-o.yaml
+    ```

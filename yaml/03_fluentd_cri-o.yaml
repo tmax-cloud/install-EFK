@@ -76,7 +76,7 @@ data:
     </source>
 
     <source>
-      type tail
+      @type tail
       @id in_tail_startupscript
       path /var/log/startupscript.log
       pos_file /var/log/fluentd-startupscript.log.pos
