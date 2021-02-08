@@ -309,10 +309,11 @@ spec:
             value: "true"
         resources:
           limits:
+            cpu: 300m
             memory: 512Mi
           requests:
-            cpu: 100m
-            memory: 200Mi
+            cpu: 50m
+            memory: 100Mi
         volumeMounts:
         - name: varlog
           mountPath: /var/log
