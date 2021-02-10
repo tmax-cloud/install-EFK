@@ -23,20 +23,14 @@ sed -i 's/{es_version}/'${ES_VERSION}'/g' 01_elasticsearch.yaml
 sed -i 's/{storageclass_name}/'${STORAGECLASS_NAME}'/g' 01_elasticsearch.yaml
 sed -i 's/{kibana_version}/'${KIBANA_VERSION}'/g' 02_kibana.yaml
 sed -i 's/{fluentd_version}/'${FLUENTD_VERSION}'/g' 03_fluentd.yaml
+sed -i 's/{fluentd_version}/'${FLUENTD_VERSION}'/g' 03_fluentd_cri-o.yaml
 
 # Install EFK
 echo "---Installation Start---"
 kubectl create ns kube-logging
 
-echo "ElasticSearch install start..."
 kubectl apply -f 01_elasticsearch.yaml
-echo "ElasticSearch install done..."
-
-echo "Kibana install start..."
 kubectl apply -f 02_kibana.yaml
-echo "Kibana install done..."
-
-echo "Fluentd install start..."
 if [ -z $1 ] || [ "docker" == $1 ]; then
   kubectl apply -f 03_fluentd.yaml
 elif [ "crio" == $1 ] || [ "cri-o" == $1 ]; then 
@@ -44,6 +38,5 @@ elif [ "crio" == $1 ] || [ "cri-o" == $1 ]; then
 else
   echo "Unknown Container Runtime Error"
 fi
-echo "Fluentd install done..."
 
 echo "---Installation Done---"
