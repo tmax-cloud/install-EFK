@@ -45,7 +45,7 @@ data:
       tag kubernetes.*
       path /var/log/containers/*.log
       pos_file /var/log/kube-containers.log.pos
-      read_from_head true
+      read_from_head false
 
       <parse>
         @type multi_format
