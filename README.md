@@ -14,13 +14,14 @@
     $ ./EFK_install.sh
     ```
 * 비고  
-    * Container Runtime과 StorageClass Name을 파라미터로 받을 수 있다.  
-    $1 = Container Runtime (default = docker)  
-    $2 = StorageClass Name (default = csi-cephfs-sc)  
+    * StorageClass Name을 파라미터로 받을 수 있다.  
+    $1 = StorageClass Name  
     * 예시
     ```bash
-    $ ./EFK_install.sh crio rook-cephfs
+    $ ./EFK_install.sh csi-cephfs-sc
     ```
+    * 아무 값도 넘겨주지 않을 시, default storageclass를 사용한다.  
+    * 본 쉘 스크립트는 Container Runtime이 cri-o인 경우를 가정하고 있으므로, 그렇지 않은 경우 아래 수동 설치를 따른다.
 
 ## 수동 설치
 ## Prerequisites
@@ -134,12 +135,14 @@
 
 ## Step 3. fluentd 설치
 * 목적 : `EFK의 agent daemon 역할을 수행하는 fluentd를 설치`
-* 생성 순서 : [03_fluentd.yaml](yaml/03_fluentd.yaml) 실행 
-    ```bash
-    $ kubectl apply -f 03_fluentd.yaml
-    ```
-* 비고 :
-    * 만약 해당 k8s 환경의 Container Runtime이 Docker가 아니라 CRI-O일 경우, [03_fluentd_cri-o.yaml](yaml/03_fluentd_cri-o.yaml) 실행
-    ``` bash
-    $ kubectl apply -f 03_fluentd_cri-o.yaml
-    ```
+* 생성 순서 : 03_fluentd~.yaml 실행  
+  1. Container Runtime이 cri-o 인 경우  
+    * [03_fluentd_cri-o.yaml](yaml/03_fluentd_cri-o.yaml) 실행
+      ``` bash
+      $ kubectl apply -f 03_fluentd_cri-o.yaml
+      ```
+  2. Container Runtime이 docker 인 경우  
+    * [03_fluentd.yaml](yaml/03_fluentd.yaml) 실행 
+      ```bash
+      $ kubectl apply -f 03_fluentd.yaml
+      ```
