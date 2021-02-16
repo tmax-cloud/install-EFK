@@ -29,7 +29,7 @@ echo "---Installation Start---"
 kubectl create ns kube-logging
 
 kubectl apply -f 01_elasticsearch.yaml
-timeout 5m kubectl -n kube-logging wait --for=condition=ready pod -l app=elasticsearch
+timeout 5m kubectl -n kube-logging rollout status statefulset/es-cluster
 suc=`echo $?`
 if [ $suc != 0 ]; then
   echo "Failed to install ElasticSearch"
@@ -40,5 +40,23 @@ else
 fi
 
 kubectl apply -f 02_kibana.yaml
-kubectl apply -f 03_fluentd_cri-o.yaml  
+timeout 5m kubectl -n kube-logging rollout status deployment/kibana
+suc=`echo $?`
+if [ $suc != 0 ]; then
+  echo "Failed to install kibana"
+  exit 1
+else
+  echo "kibana running success" 
+fi
+
+kubectl apply -f 03_fluentd_cri-o.yaml
+timeout 10m kubectl -n kube-logging rollout status daemonset/fluentd
+suc=`echo $?`
+if [ $suc != 0 ]; then
+  echo "Failed to install fluentd"
+  exit 1
+else
+  echo "fluentd running success" 
+fi
+
 echo "---Installation Done---"
