@@ -16,7 +16,6 @@ echo "ES_VERSION = $ES_VERSION"
 echo "KIBANA_VERSION = $KIBANA_VERSION"
 echo "FLUENTD_VERSION = $FLUENTD_VERSION"
 echo "BUSYBOX_VERSION = $BUSYBOX_VERSION"
-#echo "ContainerRuntime = cri-o"
 
 sed -i 's/{busybox_version}/'${BUSYBOX_VERSION}'/g' 01_elasticsearch.yaml
 sed -i 's/{es_version}/'${ES_VERSION}'/g' 01_elasticsearch.yaml
@@ -30,6 +29,16 @@ echo "---Installation Start---"
 kubectl create ns kube-logging
 
 kubectl apply -f 01_elasticsearch.yaml
+timeout 5m kubectl -n kube-logging wait --for=condition=ready pod -l app=elasticsearch
+suc=`echo $?`
+if [ $suc != 0 ]; then
+  echo "Failed to install ElasticSearch"
+  exit 1
+else
+  echo "elasticsearch running success" 
+  sleep 1m
+fi
+
 kubectl apply -f 02_kibana.yaml
 kubectl apply -f 03_fluentd_cri-o.yaml  
 echo "---Installation Done---"
