@@ -8,17 +8,17 @@
 * busybox ([busybox:1.32.0](https://hub.docker.com/layers/busybox/library/busybox/1.32.0/images/sha256-414aeb860595d7078cbe87abaeed05157d6b44907fbd7db30e1cfba9b6902448?context=explore))
 
 ## 쉘 스크립트 자동 설치
-1. EFK_install.sh 실행  
-    * EFK_install.sh를 실행한다.
+1. install_EFK.sh 실행  
+    * install_EFK.sh를 실행한다.
     ```bash
-    $ ./EFK_install.sh
+    $ ./install_EFK.sh
     ```
 * 비고  
     * StorageClass Name을 파라미터로 받을 수 있다.  
     $1 = StorageClass Name  
     * 예시
     ```bash
-    $ ./EFK_install.sh csi-cephfs-sc
+    $ ./install_EFK.sh csi-cephfs-sc
     ```
     * 아무 값도 넘겨주지 않을 시, default storageclass를 사용한다.  
     * 본 쉘 스크립트는 Container Runtime이 cri-o인 경우를 가정하고 있으므로, 그렇지 않은 경우 아래 수동 설치를 따른다.
