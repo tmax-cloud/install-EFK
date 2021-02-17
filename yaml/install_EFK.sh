@@ -26,16 +26,17 @@ sed -i 's/{fluentd_version}/'${FLUENTD_VERSION}'/g' 03_fluentd_cri-o.yaml
 
 # Install EFK
 echo "---Installation Start---"
-kubectl create ns kube-logging
+kubectl create namespace kube-logging
 
 kubectl apply -f 01_elasticsearch.yaml
 timeout 5m kubectl -n kube-logging rollout status statefulset/es-cluster
 suc=`echo $?`
 if [ $suc != 0 ]; then
   echo "Failed to install ElasticSearch"
+  ./uninstall_EFK.sh
   exit 1
 else
-  echo "elasticsearch running success" 
+  echo "ElasticSearch running success" 
   sleep 1m
 fi
 
@@ -43,20 +44,22 @@ kubectl apply -f 02_kibana.yaml
 timeout 5m kubectl -n kube-logging rollout status deployment/kibana
 suc=`echo $?`
 if [ $suc != 0 ]; then
-  echo "Failed to install kibana"
+  echo "Failed to install Kibana"
+  ./uninstall_EFK.sh
   exit 1
 else
-  echo "kibana running success" 
+  echo "Kibana running success" 
 fi
 
 kubectl apply -f 03_fluentd_cri-o.yaml
 timeout 10m kubectl -n kube-logging rollout status daemonset/fluentd
 suc=`echo $?`
 if [ $suc != 0 ]; then
-  echo "Failed to install fluentd"
+  echo "Failed to install Fluentd"
+  ./uninstall_EFK.sh
   exit 1
 else
-  echo "fluentd running success" 
+  echo "Fluentd running success" 
 fi
 
 echo "---Installation Done---"
