@@ -16,12 +16,17 @@
 * 비고  
     * StorageClass Name을 파라미터로 받을 수 있다.  
     $1 = StorageClass Name  
+    * 아무 값도 넘겨주지 않을 시, default storageclass를 사용한다.  
     * 예시
     ```bash
     $ ./install_EFK.sh csi-cephfs-sc
     ```
-    * 아무 값도 넘겨주지 않을 시, default storageclass를 사용한다.  
-    * 본 쉘 스크립트는 Container Runtime이 cri-o인 경우를 가정하고 있으므로, 그렇지 않은 경우 아래 수동 설치를 따른다.
+    * 폐쇄망의 경우 install_EFK_closed_net.sh를 실행한다.  
+      (사전에 외부 네트워크 통신이 가능한 환경에서 필요한 이미지를 다운받아야 한다.)
+    ```bash
+    $ ./install_EFK_closed_net.sh
+    ```
+    * Container Runtime이 cri-o가 아닌 경우 아래 수동 설치를 따른다.
 
 ## 수동 설치
 ## Prerequisites
@@ -52,6 +57,8 @@
     $ mkdir -p ~/efk-install
     $ export EFK_HOME=~/efk-install
     $ cd $EFK_HOME
+    $ export REGISTRY={ImageRegistryIP:Port}
+      ex) $ export REGISTRY=172.22.5.2:5000
     ```
     * 외부 네트워크 통신이 가능한 환경에서 필요한 이미지를 다운받는다.
     ```bash
@@ -103,6 +110,7 @@
     $ sed -i 's/{storageclass_name}/'${STORAGECLASS_NAME}'/g' 01_elasticsearch.yaml
 	$ sed -i 's/{kibana_version}/'${KIBANA_VERSION}'/g' 02_kibana.yaml
 	$ sed -i 's/{fluentd_version}/'${FLUENTD_VERSION}'/g' 03_fluentd.yaml
+    $ sed -i 's/{fluentd_version}/'${FLUENTD_VERSION}'/g' 03_fluentd_cri-o.yaml
 	```
 * 비고 :
     * `폐쇄망에서 설치를 진행하여 별도의 image registry를 사용하는 경우 registry 정보를 추가로 설정해준다.`
