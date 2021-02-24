@@ -21,10 +21,12 @@
     ```bash
     $ ./install_EFK.sh csi-cephfs-sc
     ```
-    * 폐쇄망의 경우 install_EFK_closed_net.sh를 실행한다.  
+    * 폐쇄망의 경우, install_EFK_closed_net.sh를 실행한다.  
       (사전에 외부 네트워크 통신이 가능한 환경에서 필요한 이미지를 다운받아야 한다.)
+    * 이미지가 저장된 REGISTRY 주소를 반드시 넘겨주어야 한다.
+    * 예시
     ```bash
-    $ ./install_EFK_closed_net.sh
+    $ ./install_EFK_closed_net.sh 172.22.5.2:5000 csi-cephfs-sc
     ```
     * Container Runtime이 cri-o가 아닌 경우 아래 수동 설치를 따른다.
 
