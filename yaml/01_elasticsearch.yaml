@@ -34,6 +34,9 @@ spec:
       containers:
       - name: elasticsearch
         image: docker.elastic.co/elasticsearch/elasticsearch:{es_version}
+        securityContext:
+          allowPrivilegeEscalation: true
+          privileged: true
         resources:
             limits:
               cpu: 500m
