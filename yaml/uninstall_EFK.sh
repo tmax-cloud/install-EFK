@@ -1,5 +1,5 @@
 echo "---Uninstallation Start---"
-kubectl apply -f 03_fluentd_cri-o.yaml
+kubectl delete -f 03_fluentd_cri-o.yaml
 timeout 5m kubectl -n kube-logging wait daemonset/fluentd --for=delete
 suc=`echo $?`
 if [ $suc != 0 ]; then
@@ -7,7 +7,7 @@ if [ $suc != 0 ]; then
   exit 1
 fi
 
-kubectl apply -f 02_kibana.yaml
+kubectl delete -f 02_kibana.yaml
 timeout 5m kubectl -n kube-logging wait deployment/kibana --for=delete
 suc=`echo $?`
 if [ $suc != 0 ]; then
@@ -15,7 +15,7 @@ if [ $suc != 0 ]; then
   exit 1
 fi
 
-kubectl apply -f 01_elasticsearch.yaml
+kubectl delete -f 01_elasticsearch.yaml
 timeout 5m kubectl -n kube-logging wait statefulset/es-cluster --for=delete
 suc=`echo $?`
 if [ $suc != 0 ]; then
