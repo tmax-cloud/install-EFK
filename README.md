@@ -7,6 +7,9 @@
 * fluentd ([fluent/fluentd-kubernetes-daemonset:v1.4.2-debian-elasticsearch-1.1](https://hub.docker.com/layers/fluent/fluentd-kubernetes-daemonset/v1.4.2-debian-elasticsearch-1.1/images/sha256-ce4885865850d3940f5e5318066897b8502c0b955066392de7fd4ef6f1fd4275?context=explore))
 * busybox ([busybox:1.32.0](https://hub.docker.com/layers/busybox/library/busybox/1.32.0/images/sha256-414aeb860595d7078cbe87abaeed05157d6b44907fbd7db30e1cfba9b6902448?context=explore))
 
+## Prerequisites
+* sidecar injection을 사용하려면 [webhook](https://github.com/tmax-cloud/install-hypercloud/tree/5.0)과 [efk-operator](https://github.com/tmax-cloud/efk-operator)가 설치 돼있어야 합니다.
+
 ## 쉘 스크립트 자동 설치
 1. install_EFK.sh 실행  
     * install_EFK.sh를 실행한다.
