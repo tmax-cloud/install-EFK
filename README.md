@@ -10,7 +10,7 @@
 ## Prerequisites
 * 필수 모듈
   * [RookCeph](https://github.com/tmax-cloud/install-rookceph)
-* sidecar injection을 사용시
+* sidecar injection 사용시
     * [webhook](https://github.com/tmax-cloud/install-hypercloud/tree/5.0)
     * [efk-operator](https://github.com/tmax-cloud/efk-operator)
 
@@ -48,6 +48,10 @@
     $ sudo chmod +x uninstall_EFK.sh
 	$ ./install_EFK.sh
 	```
+
+## 비고
+* Kibana의 서비스 타입 변경을 원하는 경우
+    * yaml/02_kibana.yaml 파일에서 Service의 spec.type 수정
 
 ## 삭제 가이드
 * 목적 : `삭제를 위한 shell script 실행`
