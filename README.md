@@ -8,33 +8,56 @@
 * busybox ([busybox:1.32.0](https://hub.docker.com/layers/busybox/library/busybox/1.32.0/images/sha256-414aeb860595d7078cbe87abaeed05157d6b44907fbd7db30e1cfba9b6902448?context=explore))
 
 ## Prerequisites
-* sidecar injection을 사용하려면 [webhook](https://github.com/tmax-cloud/install-hypercloud/tree/5.0)과 [efk-operator](https://github.com/tmax-cloud/efk-operator)가 설치 돼있어야 합니다.
+* 필수 모듈
+  * [RookCeph](https://github.com/tmax-cloud/install-rookceph)
+* sidecar injection 사용시
+    * [webhook](https://github.com/tmax-cloud/install-hypercloud/tree/5.0)
+    * [efk-operator](https://github.com/tmax-cloud/efk-operator)
 
+## Step 0. efk.config 설정
+* 목적 : `efk.config 파일에 설치를 위한 정보 기입`
+* 순서: 
+	* 환경에 맞는 config 내용 작성
+		* ES_VERSION
+			* ElasticSearch의 버전
+			* ex) 7.2.0
+		* KIBANA_VERSION
+			* KIBANA_VERSION의 버전
+			* ex) 7.2.0
+		* FLUENTD_VERSION
+			* FLUENTD_VERSION의 버전
+			* ex) v1.4.2-debian-elasticsearch-1.1
+		* BUSYBOX_VERSION
+			* BUSYBOX_VERSION의 버전
+			* ex) 1.32.0
+		* STORAGECLASS_NAME
+			* ElasticSearch가 사용할 StorageClass의 이름
+            * {STORAGECLASS_NAME} 그대로 유지시 default storageclass 사용
+			* ex) csi-cephfs-sc
+		* REGISTRY
+			* 폐쇄망 사용시 image repository의 주소
+			* 폐쇄망 아닐시 {REGISTRY} 그대로 유지
+			* ex) 192.168.171:5000
 
-## 쉘 스크립트 자동 설치
-1. install_EFK.sh 실행  
-    * install_EFK.sh를 실행한다.
-    ```bash
-    $ ./install_EFK.sh
-    ```
-* 비고  
-    * StorageClass Name을 파라미터로 받을 수 있다.  
-    $1 = StorageClass Name  
-    * 아무 값도 넘겨주지 않을 시, default storageclass를 사용한다.  
-    * 예시
-    ```bash
-    $ ./install_EFK.sh csi-cephfs-sc
-    ```
-    * 폐쇄망의 경우, install_EFK_closed_net.sh를 실행한다.  
-      (사전에 외부 네트워크 통신이 가능한 환경에서 필요한 이미지를 다운받아야 한다.)
-    * 이미지가 저장된 REGISTRY 주소를 반드시 넘겨주어야 한다.
-    * 예시
-    ```bash
-    $ ./install_EFK_closed_net.sh 172.22.5.2:5000 csi-cephfs-sc
-    ```
-    * Container Runtime이 cri-o가 아닌 경우 아래 수동 설치를 따른다.
+## Step 1. installer 실행
+* 목적 : `설치를 위한 shell script 실행`
+* 순서: 
+	* 권한 부여 및 실행
+	``` bash
+	$ sudo chmod +x install_EFK.sh
+    $ sudo chmod +x uninstall_EFK.sh
+	$ ./install_EFK.sh
+	```
 
-## 수동 설치
+## 삭제 가이드
+* 목적 : `삭제를 위한 shell script 실행`
+* 순서: 
+	* 실행
+	``` bash
+	$ ./uninstall.sh
+	```
+
+## 수동 설치 가이드
 ## Prerequisites
 1. Namespace 생성
     * EFK를 설치할 namespace를 생성한다.
