@@ -45,3 +45,25 @@ spec:
             value: http://elasticsearch.kube-logging.svc.cluster.local:9200
         ports:
         - containerPort: 5601
+        volumeMounts:
+        - mountPath: /usr/share/kibana/config/kibana.yml
+          name: config
+          subPath: kibana.yml
+      volumes:
+      - name: config
+        configMap:
+          name: kibana-config
+---
+apiVersion: v1
+data:
+  kibana.yml: |
+    server.name: kibana
+    server.host: "0"
+    server.basePath: "/api/kibana"
+    server.rewriteBasePath: true
+    elasticsearch.hosts: [ "http://elasticsearch:9200" ]
+kind: ConfigMap
+metadata:
+  name: kibana-config
+  namespace: kube-logging
+
