@@ -62,6 +62,7 @@ data:
     server.basePath: "/api/kibana"
     server.rewriteBasePath: true
     elasticsearch.hosts: [ "http://elasticsearch:9200" ]
+    elasticsearch.requestTimeout: "100000ms"
 kind: ConfigMap
 metadata:
   name: kibana-config

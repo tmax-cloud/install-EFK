@@ -9,18 +9,18 @@ if [ $STORAGECLASS_NAME != "{STORAGECLASS_NAME}" ]; then
   echo "STORAGECLASS_NAME = $STORAGECLASS_NAME"
 else
   export STORAGECLASS_NAME=
-  echo "STORAGECLASS_NAME = $STORAGECLASS_NAME"
+  echo "STORAGECLASS_NAME = default-storage-class"
 fi
 if [ $REGISTRY != "{REGISTRY}" ]; then
   echo "REGISTRY = $REGISTRY"
 fi
 
-sed -i 's/{busybox_version}/'${BUSYBOX_VERSION}'/g' 01_elasticsearch.yaml
-sed -i 's/{es_version}/'${ES_VERSION}'/g' 01_elasticsearch.yaml
-sed -i 's/{storageclass_name}/'${STORAGECLASS_NAME}'/g' 01_elasticsearch.yaml
-sed -i 's/{kibana_version}/'${KIBANA_VERSION}'/g' 02_kibana.yaml
-sed -i 's/{fluentd_version}/'${FLUENTD_VERSION}'/g' 03_fluentd.yaml
-sed -i 's/{fluentd_version}/'${FLUENTD_VERSION}'/g' 03_fluentd_cri-o.yaml
+sed -i 's/{BUSYBOX_VERSION}/'${BUSYBOX_VERSION}'/g' 01_elasticsearch.yaml
+sed -i 's/{ES_VERSION}/'${ES_VERSION}'/g' 01_elasticsearch.yaml
+sed -i 's/{STORAGECLASS_NAME}/'${STORAGECLASS_NAME}'/g' 01_elasticsearch.yaml
+sed -i 's/{KIBANA_VERSION}/'${KIBANA_VERSION}'/g' 02_kibana.yaml
+sed -i 's/{FLUENTD_VERSION}/'${FLUENTD_VERSION}'/g' 03_fluentd.yaml
+sed -i 's/{FLUENTD_VERSION}/'${FLUENTD_VERSION}'/g' 03_fluentd_cri-o.yaml
 
 if [ $REGISTRY != "{REGISTRY}" ]; then
   sed -i 's/docker.elastic.co\/elasticsearch\/elasticsearch/'${REGISTRY}'\/elasticsearch\/elasticsearch/g' 01_elasticsearch.yaml
