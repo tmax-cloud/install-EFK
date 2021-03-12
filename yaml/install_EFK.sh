@@ -42,6 +42,7 @@ if [ $suc != 0 ]; then
   exit 1
 else
   echo "ElasticSearch running success" 
+  echo "Waiting for ElasticSearch to be ready..."
   sleep 1m
 fi
 
