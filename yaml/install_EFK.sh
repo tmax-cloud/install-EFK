@@ -29,10 +29,13 @@ if [ $REGISTRY != "{REGISTRY}" ]; then
   sed -i 's/fluent\/fluentd-kubernetes-daemonset/'${REGISTRY}'\/fluentd-kubernetes-daemonset/g' 03_fluentd_cri-o.yaml
 fi
 
-# Install EFK
+# 1. Install ElasticSearch
+echo " "
 echo "---Installation Start---"
 kubectl create namespace kube-logging
 
+echo " "
+echo "---1. Install ElasticSearch---"
 kubectl apply -f 01_elasticsearch.yaml
 timeout 5m kubectl -n kube-logging rollout status statefulset/es-cluster
 suc=`echo $?`
@@ -41,11 +44,32 @@ if [ $suc != 0 ]; then
   ./uninstall_EFK.sh
   exit 1
 else
-  echo "ElasticSearch running success" 
-  echo "Waiting for ElasticSearch to be ready..."
-  sleep 1m
+  echo "ElasticSearch pod running success" 
 fi
 
+# 2. Wait until Elasticsearch starts up
+echo " "
+echo "---2. Wait until Elasticsearch starts up---"
+echo "It will take a couple of minutes"
+sleep 5s
+set +e
+export ES_IP=`kubectl get svc -n kube-logging | grep elasticsearch | tr -s ' ' | cut -d ' ' -f3`
+for (( ; ; ))
+do
+  curl -XGET http://$ES_IP:9200/_cat/indices/
+  is_success=`echo $?`
+  if [ $is_success == 0 ]; then
+    break
+  fi
+  echo "try again..."
+  sleep 1m
+done
+echo "ElasticSearch starts up successfully"
+set -e
+
+# 3. Install Kibana
+echo " "
+echo "---3. Install Kibana---"
 kubectl apply -f 02_kibana.yaml
 timeout 5m kubectl -n kube-logging rollout status deployment/kibana
 suc=`echo $?`
@@ -54,9 +78,12 @@ if [ $suc != 0 ]; then
   ./uninstall_EFK.sh
   exit 1
 else
-  echo "Kibana running success" 
+  echo "Kibana pod running success" 
 fi
 
+# 4. Install Fluentd
+echo " "
+echo "---4. Install Fluentd---"
 kubectl apply -f 03_fluentd_cri-o.yaml
 timeout 10m kubectl -n kube-logging rollout status daemonset/fluentd
 suc=`echo $?`
@@ -67,5 +94,76 @@ if [ $suc != 0 ]; then
 else
   echo "Fluentd running success" 
 fi
+
+# 5. Wait until Kibana makes an index and alias normally
+echo " "
+echo "---5. Wait until Kibana makes an index and alias normally---"
+echo "It will take a couple of minutes"
+sleep 5s
+set +e
+for (( ; ; ))
+do
+  is_success=`curl -XGET http://$ES_IP:9200/_cat/indices/`
+
+  if [[ "$is_success" == *".kibana"* ]]; then
+    break
+  fi
+  echo "try again..."
+  sleep 1m
+done
+echo "Kibana made an index on Elasticsearch successfully"
+
+echo " "
+echo "---Wait until Kibana makes an alias normally---"
+for (( ; ; ))
+do
+  is_success=`curl -XGET http://$ES_IP:9200/_alias`
+  is_kibana_normal=`kubectl get pod -n kube-logging | grep kibana | tr -s ' ' | cut -d ' ' -f4`
+
+  if [[ "$is_success" == *".kibana_1"* ]]; then
+    break
+  elif [ $is_kibana_normal != 0 ]; then
+    echo "make an index manually by curl command"
+    curl -XPUT http://$ES_IP:9200/.kibana_1/_alias/.kibana
+  fi
+  echo "try again..."
+  sleep 1m
+done
+echo "Kibana made an alias on Elasticsearch successfully"
+set -e
+
+# 6. Create default index 'logstash-*'
+echo " "
+echo "---6. Create default index 'logstash-*'---"
+echo "It will take a couple of minutes"
+set +e
+export KIBANA_IP=`kubectl get svc -n kube-logging | grep kibana | tr -s ' ' | cut -d ' ' -f3`
+
+for (( ; ; ))
+do
+  is_success=`curl -XGET http://$ES_IP:9200/_cat/indices/`
+
+  if [[ "$is_success" == *"logstash"* ]]; then
+    break
+  fi
+  echo "try again..."
+  sleep 1m
+done
+echo "logstash index was made in ElasticSearch"
+
+for (( ; ; ))
+do
+  is_success=`curl -XGET http://$KIBANA_IP:5601/api/kibana/status -I`
+
+  if [[ "$is_success" == *"200 OK"* ]]; then
+    break
+  fi
+  echo "waiting for Kibana starts up..."
+  sleep 1m
+done
+echo "Kibana starts up successfully"
+curl -f -XPOST -H 'Content-Type: application/json' -H 'kbn-xsrf: anything' http://$KIBANA_IP:5601/api/kibana/api/saved_objects/index-pattern/logstash-* '-d{"attributes":{"title":"logstash-*","timeFieldName":"@timestamp"}}' 
+curl -XPOST -H "Content-Type: application/json" -H "kbn-xsrf: true" http://$KIBANA_IP:5601/api/kibana/api/kibana/settings/defaultIndex -d '{"value": "logstash-*"}'
+set -e
 
 echo "---Installation Done---"
