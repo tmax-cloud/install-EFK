@@ -166,4 +166,5 @@ curl -f -XPOST -H 'Content-Type: application/json' -H 'kbn-xsrf: anything' http:
 curl -XPOST -H "Content-Type: application/json" -H "kbn-xsrf: true" http://$KIBANA_IP:5601/api/kibana/api/kibana/settings/defaultIndex -d '{"value": "logstash-*"}'
 set -e
 
+echo " "
 echo "---Installation Done---"
