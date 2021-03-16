@@ -45,7 +45,7 @@
 	* 권한 부여 및 실행
 	``` bash
 	$ sudo chmod +x yaml/install_EFK.sh
-   	$ sudo chmod +x yaml/uninstall_EFK.sh
+	$ sudo chmod +x yaml/uninstall_EFK.sh
 	$ ./yaml/install_EFK.sh
 	```
 
