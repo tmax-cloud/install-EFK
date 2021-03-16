@@ -15,7 +15,7 @@
     * [efk-operator](https://github.com/tmax-cloud/efk-operator)
 
 ## Step 0. efk.config 설정
-* 목적 : `efk.config 파일에 설치를 위한 정보 기입`
+* 목적 : `yaml/efk.config 파일에 설치를 위한 정보 기입`
 * 순서: 
 	* 환경에 맞는 config 내용 작성
 		* ES_VERSION
@@ -44,9 +44,9 @@
 * 순서: 
 	* 권한 부여 및 실행
 	``` bash
-	$ sudo chmod +x install_EFK.sh
-    $ sudo chmod +x uninstall_EFK.sh
-	$ ./install_EFK.sh
+	$ sudo chmod +x yaml/install_EFK.sh
+   	$ sudo chmod +x yaml/uninstall_EFK.sh
+	$ ./yaml/install_EFK.sh
 	```
 
 ## 비고
@@ -58,7 +58,7 @@
 * 순서: 
 	* 실행
 	``` bash
-	$ ./uninstall.sh
+	$ ./yaml/uninstall.sh
 	```
 
 ## 수동 설치 가이드
