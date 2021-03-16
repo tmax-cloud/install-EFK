@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
       - name: elasticsearch
-        image: docker.elastic.co/elasticsearch/elasticsearch:{es_version}
+        image: docker.elastic.co/elasticsearch/elasticsearch:{ES_VERSION}
         securityContext:
           allowPrivilegeEscalation: true
           privileged: true
@@ -69,7 +69,7 @@ spec:
             value: "-Xms2g -Xmx2g"
       initContainers:
       - name: fix-permissions
-        image: busybox:{busybox_version}
+        image: busybox:{BUSYBOX_VERSION}
         command: ["sh", "-c", "chown -R 1000:1000 /usr/share/elasticsearch/data"]
         securityContext:
           privileged: true
@@ -77,12 +77,12 @@ spec:
         - name: data
           mountPath: /usr/share/elasticsearch/data
       - name: increase-vm-max-map
-        image: busybox:{busybox_version}
+        image: busybox:{BUSYBOX_VERSION}
         command: ["sysctl", "-w", "vm.max_map_count=262144"]
         securityContext:
           privileged: true
       - name: increase-fd-ulimit
-        image: busybox:{busybox_version}
+        image: busybox:{BUSYBOX_VERSION}
         command: ["sh", "-c", "ulimit -n 65536"]
         securityContext:
           privileged: true
@@ -93,7 +93,7 @@ spec:
         app: elasticsearch
     spec:
       accessModes: [ "ReadWriteOnce" ]
-      storageClassName: {storageclass_name}
+      storageClassName: {STORAGECLASS_NAME}
       resources:
         requests:
           storage: 50Gi
