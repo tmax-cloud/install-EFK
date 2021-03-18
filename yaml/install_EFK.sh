@@ -54,15 +54,20 @@ echo "It will take a couple of minutes"
 sleep 5s
 set +e
 export ES_IP=`kubectl get svc -n kube-logging | grep elasticsearch | tr -s ' ' | cut -d ' ' -f3`
-for (( ; ; ))
+for ((i=0; i<11; i++))
 do
   curl -XGET http://$ES_IP:9200/_cat/indices/
   is_success=`echo $?`
   if [ $is_success == 0 ]; then
     break
+  elif [ $i == 10 ]; then
+    echo "Timeout. Start uninstall"
+    ./uninstall_EFK.sh
+    exit 1
+  else
+    echo "try again..."
+    sleep 1m
   fi
-  echo "try again..."
-  sleep 1m
 done
 echo "ElasticSearch starts up successfully"
 set -e
@@ -101,21 +106,26 @@ echo "---5. Wait until Kibana makes an index and alias normally---"
 echo "It will take a couple of minutes"
 sleep 5s
 set +e
-for (( ; ; ))
+for ((i=0; i<11; i++))
 do
   is_success=`curl -XGET http://$ES_IP:9200/_cat/indices/`
 
   if [[ "$is_success" == *".kibana"* ]]; then
     break
+  elif [ $i == 10 ]; then
+    echo "Timeout. Start uninstall"
+    ./uninstall_EFK.sh
+    exit 1
+  else
+    echo "try again..."
+    sleep 1m
   fi
-  echo "try again..."
-  sleep 1m
 done
 echo "Kibana made an index on Elasticsearch successfully"
 
 echo " "
 echo "---Wait until Kibana makes an alias normally---"
-for (( ; ; ))
+for ((i=0; i<11; i++))
 do
   is_success=`curl -XGET http://$ES_IP:9200/_alias`
   is_kibana_normal=`kubectl get pod -n kube-logging | grep kibana | tr -s ' ' | cut -d ' ' -f4`
@@ -125,9 +135,14 @@ do
   elif [ $is_kibana_normal != 0 ]; then
     echo "make an index manually by curl command"
     curl -XPUT http://$ES_IP:9200/.kibana_1/_alias/.kibana
+  elif [ $i == 10 ]; then
+    echo "Timeout. Start uninstall"
+    ./uninstall_EFK.sh
+    exit 1
+  else
+    echo "try again..."
+    sleep 1m
   fi
-  echo "try again..."
-  sleep 1m
 done
 echo "Kibana made an alias on Elasticsearch successfully"
 set -e
@@ -139,27 +154,37 @@ echo "It will take a couple of minutes"
 set +e
 export KIBANA_IP=`kubectl get svc -n kube-logging | grep kibana | tr -s ' ' | cut -d ' ' -f3`
 
-for (( ; ; ))
+for ((i=0; i<11; i++))
 do
   is_success=`curl -XGET http://$ES_IP:9200/_cat/indices/`
 
   if [[ "$is_success" == *"logstash"* ]]; then
     break
+  elif [ $i == 10 ]; then
+    echo "Timeout. Start uninstall"
+    ./uninstall_EFK.sh
+    exit 1
+  else
+    echo "try again..."
+    sleep 1m
   fi
-  echo "try again..."
-  sleep 1m
 done
 echo "logstash index was made in ElasticSearch"
 
-for (( ; ; ))
+for ((i=0; i<11; i++))
 do
   is_success=`curl -XGET http://$KIBANA_IP:5601/api/kibana/status -I`
 
   if [[ "$is_success" == *"200 OK"* ]]; then
     break
+  elif [ $i == 10 ]; then
+    echo "Timeout. Start uninstall"
+    ./uninstall_EFK.sh
+    exit 1
+  else
+    echo "waiting for Kibana starts up..."
+    sleep 1m
   fi
-  echo "waiting for Kibana starts up..."
-  sleep 1m
 done
 echo "Kibana starts up successfully"
 curl -f -XPOST -H 'Content-Type: application/json' -H 'kbn-xsrf: anything' http://$KIBANA_IP:5601/api/kibana/api/saved_objects/index-pattern/logstash-* '-d{"attributes":{"title":"logstash-*","timeFieldName":"@timestamp"}}' 
