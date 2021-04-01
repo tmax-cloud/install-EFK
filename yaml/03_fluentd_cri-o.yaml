@@ -68,6 +68,7 @@ data:
       path /var/log/salt/minion
       pos_file /var/log/fluentd-salt.pos
       tag salt
+      read_from_head false
       <parse>
         @type regexp
         expression /^(?<time>[^ ]* [^ ,]*)[^\[]*\[[^\]]*\]\[(?<severity>[^ \]]*) *\] (?<message>.*)$/
@@ -81,6 +82,7 @@ data:
       path /var/log/startupscript.log
       pos_file /var/log/fluentd-startupscript.log.pos
       tag startupscript
+      read_from_head false
       <parse>
         @type syslog
       </parse>
@@ -92,6 +94,7 @@ data:
       path /var/log/docker.log
       pos_file /var/log/fluentd-docker.log.pos
       tag docker
+      read_from_head false
       <parse>
         @type regexp
         expression /^time="(?<time>[^)]*)" level=(?<severity>[^ ]*) msg="(?<message>[^"]*)"( err="(?<error>[^"]*)")?( statusCode=($<status_code>\d+))?/
@@ -104,6 +107,7 @@ data:
       path /var/log/etcd.log
       pos_file /var/log/fluentd-etcd.log.pos
       tag etcd
+      read_from_head false
       <parse>
         @type none
       </parse>
@@ -116,6 +120,7 @@ data:
       path /var/log/kubelet.log
       pos_file /var/log/fluentd-kubelet.log.pos
       tag kubelet
+      read_from_head false
       <parse>
         @type kubernetes
       </parse>
@@ -128,6 +133,7 @@ data:
       path /var/log/kube-proxy.log
       pos_file /var/log/fluentd-kube-proxy.log.pos
       tag kube-proxy
+      read_from_head false
       <parse>
         @type kubernetes
       </parse>
@@ -140,6 +146,7 @@ data:
       path /var/log/kube-apiserver.log
       pos_file /var/log/fluentd-kube-apiserver.log.pos
       tag kube-apiserver
+      read_from_head false
       <parse>
         @type kubernetes
       </parse>
@@ -152,6 +159,7 @@ data:
       path /var/log/kube-controller-manager.log
       pos_file /var/log/fluentd-kube-controller-manager.log.pos
       tag kube-controller-manager
+      read_from_head false
       <parse>
         @type kubernetes
       </parse>
@@ -164,6 +172,7 @@ data:
       path /var/log/kube-scheduler.log
       pos_file /var/log/fluentd-kube-scheduler.log.pos
       tag kube-scheduler
+      read_from_head false
       <parse>
         @type kubernetes
       </parse>
@@ -176,6 +185,7 @@ data:
       path /var/log/rescheduler.log
       pos_file /var/log/fluentd-rescheduler.log.pos
       tag rescheduler
+      read_from_head false
       <parse>
         @type kubernetes
       </parse>
@@ -188,6 +198,7 @@ data:
       path /var/log/glbc.log
       pos_file /var/log/fluentd-glbc.log.pos
       tag glbc
+      read_from_head false
       <parse>
         @type kubernetes
       </parse>
@@ -200,6 +211,7 @@ data:
       path /var/log/cluster-autoscaler.log
       pos_file /var/log/fluentd-cluster-autoscaler.log.pos
       tag cluster-autoscaler
+      read_from_head false
       <parse>
         @type kubernetes
       </parse>
@@ -215,6 +227,7 @@ data:
       path /var/log/kubernetes/kube-apiserver-audit.log
       pos_file /var/log/kube-apiserver-audit.log.pos
       tag kube-apiserver-audit
+      read_from_head false
       <parse>
         @type multiline
         format_firstline /^\S+\s+AUDIT:/
