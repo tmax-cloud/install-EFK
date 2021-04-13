@@ -9,7 +9,7 @@
 
 ## Prerequisites
 * 필수 모듈
-  * [RookCeph](https://github.com/tmax-cloud/install-rookceph)
+  * [RookCeph](https://github.com/tmax-cloud/hypersds-wiki/)
 * sidecar injection 사용시
     * [webhook](https://github.com/tmax-cloud/install-hypercloud/tree/5.0)
     * [efk-operator](https://github.com/tmax-cloud/efk-operator)
@@ -149,9 +149,10 @@
     * `폐쇄망에서 설치를 진행하여 별도의 image registry를 사용하는 경우 registry 정보를 추가로 설정해준다.`
 	```bash
 	$ sed -i 's/docker.elastic.co\/elasticsearch\/elasticsearch/'${REGISTRY}'\/elasticsearch\/elasticsearch/g' 01_elasticsearch.yaml
+	$ sed -i 's/busybox/'${REGISTRY}'\/busybox/g' 01_elasticsearch.yaml
 	$ sed -i 's/docker.elastic.co\/kibana\/kibana/'${REGISTRY}'\/kibana\/kibana/g' 02_kibana.yaml
 	$ sed -i 's/fluent\/fluentd-kubernetes-daemonset/'${REGISTRY}'\/fluentd-kubernetes-daemonset/g' 03_fluentd.yaml
-    $ sed -i 's/fluent\/fluentd-kubernetes-daemonset/'${REGISTRY}'\/fluentd-kubernetes-daemonset/g' 03_fluentd_cri-o.yaml
+	$ sed -i 's/fluent\/fluentd-kubernetes-daemonset/'${REGISTRY}'\/fluentd-kubernetes-daemonset/g' 03_fluentd_cri-o.yaml
 	```    
     
 ## Step 1. ElasticSearch 설치
