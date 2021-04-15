@@ -11,8 +11,54 @@
 * 필수 모듈
   * [RookCeph](https://github.com/tmax-cloud/hypersds-wiki/)
 * sidecar injection 사용시
-    * [webhook](https://github.com/tmax-cloud/install-hypercloud/tree/5.0)
-    * [efk-operator](https://github.com/tmax-cloud/efk-operator)
+  * [webhook](https://github.com/tmax-cloud/install-hypercloud/tree/5.0)
+  * [efk-operator](https://github.com/tmax-cloud/efk-operator)
+
+## 폐쇄망 설치 가이드
+* 설치를 진행하기 전 아래의 과정을 통해 필요한 이미지 및 yaml 파일을 준비한다.
+* 그 후, Install Step을 진행하면 된다.
+1. 사용하는 image repository에 EFK 설치 시 필요한 이미지를 push한다. 
+
+    * 작업 디렉토리 생성 및 환경 설정
+    ```bash
+    $ mkdir -p ~/efk-install
+    $ export EFK_HOME=~/efk-install
+    $ cd $EFK_HOME
+    $ export ES_VERSION=7.2.0
+    $ export KIBANA_VERSION=7.2.0
+    $ export FLUENTD_VERSION=v1.4.2-debian-elasticsearch-1.1
+    $ export BUSYBOX_VERSION=1.32.0
+    $ export REGISTRY={ImageRegistryIP:Port}
+    ```
+    * 외부 네트워크 통신이 가능한 환경에서 필요한 이미지를 다운받는다.
+    ```bash
+    $ sudo docker pull docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION}
+    $ sudo docker save docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION} > elasticsearch_${ES_VERSION}.tar
+    $ sudo docker pull docker.elastic.co/kibana/kibana:${KIBANA_VERSION}
+    $ sudo docker save docker.elastic.co/kibana/kibana:${KIBANA_VERSION} > kibana_${KIBANA_VERSION}.tar
+    $ sudo docker pull fluent/fluentd-kubernetes-daemonset:${FLUENTD_VERSION}
+    $ sudo docker save fluent/fluentd-kubernetes-daemonset:${FLUENTD_VERSION} > fluentd_${FLUENTD_VERSION}.tar
+    $ sudo docker pull busybox:${BUSYBOX_VERSION}
+    $ sudo docker save busybox:${BUSYBOX_VERSION} > busybox_${BUSYBOX_VERSION}.tar
+    ```
+  
+2. 위의 과정에서 생성한 tar 파일들을 폐쇄망 환경으로 이동시킨 뒤 사용하려는 registry에 이미지를 push한다.
+    ```bash
+    $ sudo docker load < elasticsearch_${ES_VERSION}.tar
+    $ sudo docker load < kibana_${KIBANA_VERSION}.tar
+    $ sudo docker load < fluentd_${FLUENTD_VERSION}.tar
+    $ sudo docker load < busybox_${BUSYBOX_VERSION}.tar
+    
+    $ sudo docker tag docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION} ${REGISTRY}/elasticsearch/elasticsearch:${ES_VERSION}
+    $ sudo docker tag docker.elastic.co/kibana/kibana:${KIBANA_VERSION} ${REGISTRY}/kibana/kibana:${KIBANA_VERSION}
+    $ sudo docker tag fluent/fluentd-kubernetes-daemonset:${FLUENTD_VERSION} ${REGISTRY}/fluentd-kubernetes-daemonset:${FLUENTD_VERSION}
+    $ sudo docker tag busybox:${BUSYBOX_VERSION} ${REGISTRY}/busybox:${BUSYBOX_VERSION}
+    
+    $ sudo docker push ${REGISTRY}/elasticsearch/elasticsearch:${ES_VERSION}
+    $ sudo docker push ${REGISTRY}/kibana/kibana:${KIBANA_VERSION}
+    $ sudo docker push ${REGISTRY}/fluentd-kubernetes-daemonset:${FLUENTD_VERSION}
+    $ sudo docker push ${REGISTRY}/busybox:${BUSYBOX_VERSION}
+    ```
 
 ## Step 0. efk.config 설정
 * 목적 : `yaml/efk.config 파일에 설치를 위한 정보 기입`
@@ -80,52 +126,6 @@
 
 * 비고  
     * 이하 인스톨 가이드는 StorageClass 이름이 csi-cephfs-sc 라는 가정하에 진행한다.
-
-## 폐쇄망 설치 가이드
-설치를 진행하기 전 아래의 과정을 통해 필요한 이미지 및 yaml 파일을 준비한다.
-1. **폐쇄망에서 설치하는 경우** 사용하는 image repository에 EFK 설치 시 필요한 이미지를 push한다. 
-
-    * 작업 디렉토리 생성 및 환경 설정
-    ```bash
-    $ mkdir -p ~/efk-install
-    $ export EFK_HOME=~/efk-install
-    $ cd $EFK_HOME
-    $ export REGISTRY={ImageRegistryIP:Port}
-      ex) $ export REGISTRY=172.22.5.2:5000
-    ```
-    * 외부 네트워크 통신이 가능한 환경에서 필요한 이미지를 다운받는다.
-    ```bash
-    $ sudo docker pull docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION}
-    $ sudo docker save docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION} > elasticsearch_${ES_VERSION}.tar
-    $ sudo docker pull docker.elastic.co/kibana/kibana:${KIBANA_VERSION}
-    $ sudo docker save docker.elastic.co/kibana/kibana:${KIBANA_VERSION} > kibana_${KIBANA_VERSION}.tar
-    $ sudo docker pull fluent/fluentd-kubernetes-daemonset:${FLUENTD_VERSION}
-    $ sudo docker save fluent/fluentd-kubernetes-daemonset:${FLUENTD_VERSION} > fluentd_${FLUENTD_VERSION}.tar
-    $ sudo docker pull busybox:${BUSYBOX_VERSION}
-    $ sudo docker save busybox:${BUSYBOX_VERSION} > busybox_${BUSYBOX_VERSION}.tar
-    ```
-    * install yaml을 다운로드한다.
-    ```bash
-    $ wget -O hypercloud-install.tar.gz https://github.com/tmax-cloud/hypercloud-install-guide/archive/v${INSTALL_GUIDE_VERSION}.tar.gz
-    ```
-  
-2. 위의 과정에서 생성한 tar 파일들을 폐쇄망 환경으로 이동시킨 뒤 사용하려는 registry에 이미지를 push한다.
-    ```bash
-    $ sudo docker load < elasticsearch_${ES_VERSION}.tar
-    $ sudo docker load < kibana_${KIBANA_VERSION}.tar
-    $ sudo docker load < fluentd_${FLUENTD_VERSION}.tar
-    $ sudo docker load < busybox_${BUSYBOX_VERSION}.tar
-    
-    $ sudo docker tag docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION} ${REGISTRY}/elasticsearch/elasticsearch:${ES_VERSION}
-    $ sudo docker tag docker.elastic.co/kibana/kibana:${KIBANA_VERSION} ${REGISTRY}/kibana/kibana:${KIBANA_VERSION}
-    $ sudo docker tag fluent/fluentd-kubernetes-daemonset:${FLUENTD_VERSION} ${REGISTRY}/fluentd-kubernetes-daemonset:${FLUENTD_VERSION}
-    $ sudo docker tag busybox:${BUSYBOX_VERSION} ${REGISTRY}/busybox:${BUSYBOX_VERSION}
-    
-    $ sudo docker push ${REGISTRY}/elasticsearch/elasticsearch:${ES_VERSION}
-    $ sudo docker push ${REGISTRY}/kibana/kibana:${KIBANA_VERSION}
-    $ sudo docker push ${REGISTRY}/fluentd-kubernetes-daemonset:${FLUENTD_VERSION}
-    $ sudo docker push ${REGISTRY}/busybox:${BUSYBOX_VERSION}
-    ```
 
 ## Install Steps
 0. [efk yaml 수정](https://github.com/tmax-cloud/hypercloud-install-guide/tree/master/EFK#step-0-efk-yaml-%EC%88%98%EC%A0%95)
