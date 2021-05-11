@@ -55,8 +55,7 @@ spec:
       serviceAccount: fluentd
       serviceAccountName: fluentd
       tolerations:
-      - key: node-role.kubernetes.io/master
-        effect: NoSchedule
+      - operator: Exists
       containers:
       - name: fluentd
         image: fluent/fluentd-kubernetes-daemonset:{FLUENTD_VERSION}
