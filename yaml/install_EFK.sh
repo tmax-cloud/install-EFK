@@ -1,5 +1,9 @@
+#!/bin/bash
+SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+pushd $SCRIPTDIR
+
 # Apply configuration
-source efk.config
+source ./efk.config
 
 echo "ES_VERSION = $ES_VERSION"
 echo "KIBANA_VERSION = $KIBANA_VERSION"
@@ -194,3 +198,4 @@ set -e
 
 echo " "
 echo "---Installation Done---"
+popd
