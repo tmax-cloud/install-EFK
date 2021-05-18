@@ -1,3 +1,7 @@
+#!/bin/bash
+SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+pushd $SCRIPTDIR
+
 echo "---Uninstallation Start---"
 timeout 5m kubectl delete -f 03_fluentd_cri-o.yaml 
 suc=`echo $?`
@@ -27,3 +31,4 @@ if [ $suc != 0 ]; then
   #exit 1
 fi
 echo "---Uninstallation Done---"
+popd
