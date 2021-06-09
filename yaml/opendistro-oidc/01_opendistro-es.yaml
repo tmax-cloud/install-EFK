@@ -1,0 +1,178 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: opendistro-els
+  namespace: kube-logging
+  labels:
+    app: opendistro-els
+spec:
+  selector:
+    app: opendistro-els
+  ports:
+    - name: http
+      port: 9200
+    - name: transport
+      port: 9300
+  clusterIP: None
+
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: opendistro-els
+  namespace: kube-logging
+spec:
+  serviceName: opendistro-els
+  replicas: 1
+  selector:
+    matchLabels:
+      app: opendistro-els
+  template:
+    metadata:
+      labels:
+        app: opendistro-els
+    spec:
+      containers:
+      - name: elasticsearch
+        image: amazon/opendistro-for-elasticsearch:1.9.0
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: true
+        command:
+        - /bin/bash
+        - -c
+        - |     
+          /usr/local/bin/docker-entrypoint.sh eswrapper
+        ports:
+        - containerPort: 9200
+          name: http
+          protocol: TCP
+        - containerPort: 9300
+          name: transport
+          protocol: TCP
+        volumeMounts:
+        - name: elasticsearch-config
+          mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
+          subPath: elasticsearch.yml
+        - name: config
+          mountPath: /usr/share/elasticsearch/plugins/opendistro_security/securityconfig/config.yml
+          subPath: config.yml
+        #- name: roles-mapping-config
+        #  mountPath: /usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml
+        #  subPath: roles_mapping.yml
+        #- name: internalusers
+        #  mountPath: /usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
+        #  subPath: internal_users.yml
+        - name: esnode-secret
+          mountPath: /usr/share/elasticsearch/config/certs
+        - name: opendistro-secret
+          mountPath: /usr/share/elasticsearch/config/stack-certs  
+        - name: hypercloud-root-ca
+          mountPath: /usr/share/elasticsearch/config/hypercloud-root-ca.pem
+          subPath: hypercloud-root-ca.pem
+        env:
+          - name: cluster.name
+            value: opendistro-els
+          - name: node.name
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: cluster.initial_master_nodes
+            value: "opendistro-els-0,"
+          - name: discovery.seed_hosts
+            value: "opendistro-els"
+          - name: ES_JAVA_OPTS
+            value: "-Xms2g -Xmx2g"
+          - name: ELASTIC_PASSWORD
+            value: tmax@23
+      initContainers:
+      - name: fix-permissions
+        image: busybox:1.32.0
+        command: ["sh", "-c", "chown -R 1000:1000 /usr/share/elasticsearch/data"]
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: data
+          mountPath: /usr/share/elasticsearch/data
+      - name: increase-vm-max-map
+        image: busybox:1.32.0
+        command: ["sysctl", "-w", "vm.max_map_count=262144"]
+        securityContext:
+          privileged: true
+      - name: increase-fd-ulimit
+        image: busybox:1.32.0
+        command: ["sh", "-c", "ulimit -n 65536"]
+        securityContext:
+          privileged: true
+      volumes:
+      - name: elasticsearch-config
+        configMap:
+          name: opendistro-els-config
+      - name: esnode-secret
+        secret:
+          secretName: esnode-secret
+      - name: opendistro-secret
+        secret:
+          secretName: opendistro-secret
+      - name: hypercloud-root-ca
+        secret:
+          secretName: hypercloud-root-ca
+      - name: config
+        configMap:
+          name: opendistro-config
+      #- name: roles-mapping-config
+      #  configMap:
+      #    name: roles-mapping-config
+      #- name: internalusers
+      #  configMap:
+      #    name: internalusers
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+      annotations:
+        volume.beta.kubernetes.io/storage-class: csi-cephfs-sc
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: csi-cephfs-sc
+      resources:
+        requests:
+          storage: 5Gi
+
+---
+
+kind: ConfigMap
+apiVersion: v1
+data:
+  elasticsearch.yml: |
+    network.host: 0.0.0.0
+
+    opendistro_security.ssl.transport.pemcert_filepath: stack-certs/opendistro-els-0.pem
+    opendistro_security.ssl.transport.pemkey_filepath: stack-certs/opendistro-els-0-key-8.pem
+    opendistro_security.ssl.transport.pemtrustedcas_filepath: hypercloud-root-ca.pem
+
+    opendistro_security.ssl.http.enabled: false
+    opendistro_security.ssl.http.pemcert_filepath: certs/esnode.pem
+    opendistro_security.ssl.http.pemkey_filepath: certs/esnode-key.pem
+    opendistro_security.ssl.http.pemtrustedcas_filepath: hypercloud-root-ca.pem
+    #opendistro_security.allow_unsafe_democertificates: true
+    opendistro_security.allow_default_init_securityindex: true
+
+    opendistro_security.authcz.admin_dn:
+      - CN=opendistro-els,O=Tmax,L=San Francisco,ST=CA,C=KR
+    opendistro_security.ssl.transport.enforce_hostname_verification: false
+    opendistro_security.nodes_dn:
+      - CN=opendistro-els-0,O=Tmax,L=San Francisco,ST=CA,C=KR
+
+    opendistro_security.audit.type: internal_elasticsearch
+    opendistro_security.enable_snapshot_restore_privilege: true
+    opendistro_security.check_snapshot_restore_write_privileges: true
+    opendistro_security.restapi.roles_enabled: ["all_access", "security_rest_api_access"]
+    opendistro_security.protected_indices.enabled: true
+    opendistro_security.protected_indices.indices: [".opendistro-alerting-config", ".opendistro-alerting-alert*", ".opendistro-anomaly-results*", ".opendistro-anomaly-detector*", ".opendistro-anomaly-checkpoints", ".opendistro-anomaly-detection-state", ".opendistro-reports-*", ".opendistro-notifications-*", ".opendistro-notebooks", ".opendistro-asynchronous-search-response*"]
+    cluster.routing.allocation.disk.threshold_enabled: false
+    node.max_local_storage_nodes: 3
+   
+metadata:
+  name: opendistro-els-config
+  namespace: kube-logging

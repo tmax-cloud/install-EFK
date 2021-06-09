@@ -1,0 +1,96 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: opendistro-kibana
+  namespace: kube-logging
+  labels:
+    app: opendistro-kibana
+spec:
+  type: NodePort
+  ports:
+  - port: 5601
+    targetPort: 5601
+    nodePort: 31114
+  selector:
+    app: opendistro-kibana
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opendistro-kibana
+  namespace: kube-logging
+  labels:
+    app: opendistro-kibana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: opendistro-kibana
+  template:
+    metadata:
+      labels:
+        app: opendistro-kibana
+    spec:
+      containers:
+      - name: kibana
+        image: amazon/opendistro-for-elasticsearch-kibana:1.9.0
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: ELASTICSEARCH_HOSTS
+            value: http://opendistro-els:9200
+        volumeMounts:
+        - name: config
+          mountPath: /usr/share/kibana/config/kibana.yml
+          subPath: kibana.yml
+        - name: tls
+          mountPath: /usr/share/kibana/config/certs
+        - name: hypercloud-root-ca
+          mountPath: /usr/share/kibana/config/hypercloud-root-ca.pem
+          subPath: hypercloud-root-ca.pem
+        ports:
+        - containerPort: 5601
+      volumes:
+      - name: config
+        configMap:
+          name: opendistro-kibana-config
+      - name: tls
+        secret:
+          secretName: opendistro-tls-secret
+      - name: hypercloud-root-ca
+        secret:
+          secretName: hypercloud-root-ca
+
+---
+
+apiVersion: v1
+data:
+  kibana.yml: |
+    server.basePath: /api/kibana
+    server.rewriteBasePath: true
+
+    server.name: kibana
+    server.host: "0"
+    elasticsearch.hosts: http://opendistro-els:9200
+    elasticsearch.ssl.verificationMode: "none"
+    elasticsearch.username: kibanaserver
+    elasticsearch.password: kibanaserver
+    elasticsearch.requestHeadersWhitelist: ["securitytenant","Authorization"]
+
+    server.ssl.enabled: true
+    server.ssl.key: config/certs/tls.key
+    server.ssl.certificate: config/certs/tls.crt 
+
+    opendistro_security.multitenancy.enabled: true
+    opendistro_security.multitenancy.tenants.preferred: ["Private", "Global"]
+    opendistro_security.readonly_mode.roles: ["kibana_read_only"]
+
+    opendistro_security.auth.type: "openid"
+    opendistro_security.openid.connect_url: "https://hyperauth.org/auth/realms/tmax/.well-known/openid-configuration"
+    opendistro_security.openid.client_id: "kibana"
+    opendistro_security.openid.base_redirect_url: "https://172.22.6.2:31114"
+kind: ConfigMap
+metadata:
+  name: opendistro-kibana-config
+  namespace: kube-logging
