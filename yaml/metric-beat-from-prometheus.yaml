@@ -55,7 +55,6 @@ spec:
       labels:
         k8s-app: metricbeat
     spec:
-      serviceAccountName: metricbeat
       hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet
       containers:
