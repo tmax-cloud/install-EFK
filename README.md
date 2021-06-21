@@ -189,3 +189,31 @@
       ```bash
       $ kubectl apply -f 03_fluentd.yaml
       ```
+
+## ElasticSearch에 HTTP 콜 하는 방법
+* ElasticSearch UI 좌측에 스패너 모양 클릭
+* HTTP 콜 작성 후 ▶ 버튼 클릭
+    ![image](figure/call-tab.PNG)
+
+## 에러 해결법
+* Limit of total fields [1000] in index 에러
+    * 원인 : 저장하려는 field 갯수가 index의 field limit보다 큰 경우
+    * 해결 : index.mapping.total_fields.limit 증가 HTTP 콜 실행
+    ```
+    PUT {index 이름}/_settings
+    {
+        "index.mapping.total_fields.limit": 2000
+    }
+    ```
+* index read-only 에러
+    * 원인 : 디스크 사용량이 flood-stage watermark 수치를 넘어서면 ES가 자동적으로 저장을 막음 (default 값은 95%)
+    * 해결 (택1)
+        * 필요없는 인덱스를 삭제해서 용량 확보
+        ![image](figure/delete-index.PNG)
+        * HTTP콜을 통해 read-only 해제하기
+        ```
+        PUT /{index 이름}/_settings
+        {
+            "index.blocks.read_only_allow_delete": null
+        }
+        ```
