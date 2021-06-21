@@ -192,12 +192,13 @@
 
 ## ElasticSearch에 HTTP 콜 하는 방법
 * ElasticSearch UI 좌측에 스패너 모양 클릭
+* HTTP 콜 작성 후 ▶ 버튼 클릭
     ![image](figure/call-tab.PNG)
 
 ## 에러 해결법
 * Limit of total fields [1000] in index 에러
     * 원인 : 저장하려는 field 갯수가 index의 field limit보다 큰 경우
-    * 해결 : index.mapping.total_fields.limit 증가
+    * 해결 : index.mapping.total_fields.limit 증가 HTTP 콜 실행
     ```
     PUT {index 이름}/_settings
     {
