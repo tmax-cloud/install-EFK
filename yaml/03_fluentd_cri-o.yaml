@@ -28,6 +28,16 @@ data:
       logstash_format "#{ENV['FLUENT_ELASTICSEARCH_LOGSTASH_FORMAT'] || 'true'}"
       index_name "#{ENV['FLUENT_ELASTICSEARCH_LOGSTASH_INDEX_NAME'] || 'logstash'}"
       type_name "#{ENV['FLUENT_ELASTICSEARCH_LOGSTASH_TYPE_NAME'] || 'fluentd'}"
+
+      enable_ilm true
+      #ilm_policy_id watch-history-ilm-policy
+      #ilm_policy_overwrite false
+      #rollover_index true
+      #ilm_policy {}
+      template_name delete-after-7days
+      template_file /fluentd/etc/index_template.json
+      #customize_template {"<<index_prefix>>": "fluentd"}
+
       <buffer>
         @type file
         path /var/log/fluentd-buffer
@@ -246,6 +256,21 @@ data:
       @type kubernetes_metadata
       @id filter_kube_metadata
     </filter>
+  
+  index_template.json: |-
+    {
+      "index_patterns": [
+        "logstash-*"
+      ],
+      "settings": {
+        "index": {
+          "lifecycle": {
+            "name": "watch-history-ilm-policy",
+            "rollover_alias": ""
+          }
+        }
+      }
+    }
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -335,6 +360,9 @@ spec:
         - name: config
           mountPath: /fluentd/etc/kubernetes.conf
           subPath: kubernetes.conf
+        - name: index-template
+          mountPath: /fluentd/etc/index_template.json
+          subPath: index_template.json
       terminationGracePeriodSeconds: 30
       volumes:
       - name: varlog
@@ -346,3 +374,12 @@ spec:
       - name: config
         configMap:
           name: fluentd-config
+          items:
+          - key: kubernetes.conf
+            path: kubernetes.conf
+      - name: index-template
+        configMap:
+          name: fluentd-config
+          items:
+          - key: index_template.json
+            path: index_template.json
