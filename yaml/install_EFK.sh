@@ -46,7 +46,7 @@ timeout 5m kubectl -n kube-logging rollout status statefulset/es-cluster
 suc=`echo $?`
 if [ $suc != 0 ]; then
   echo "Failed to install ElasticSearch"
-  ./uninstall_EFK.sh
+  kubectl delete -f 01_elasticsearch.yaml
   exit 1
 else
   echo "ElasticSearch pod running success" 
@@ -67,7 +67,7 @@ do
     break
   elif [ $i == 10 ]; then
     echo "Timeout. Start uninstall"
-    ./uninstall_EFK.sh
+    kubectl delete -f 01_elasticsearch.yaml
     exit 1
   else
     echo "try again..."
@@ -85,7 +85,7 @@ timeout 5m kubectl -n kube-logging rollout status deployment/kibana
 suc=`echo $?`
 if [ $suc != 0 ]; then
   echo "Failed to install Kibana"
-  ./uninstall_EFK.sh
+  kubectl delete -f 02_kibana.yaml
   exit 1
 else
   echo "Kibana pod running success" 
@@ -99,7 +99,7 @@ timeout 10m kubectl -n kube-logging rollout status daemonset/fluentd
 suc=`echo $?`
 if [ $suc != 0 ]; then
   echo "Failed to install Fluentd"
-  ./uninstall_EFK.sh
+  kubectl delete -f 03_fluentd_cri-o.yaml
   exit 1
 else
   echo "Fluentd running success" 
@@ -118,8 +118,7 @@ do
   if [[ "$is_success" == *".kibana"* ]]; then
     break
   elif [ $i == 10 ]; then
-    echo "Timeout. Start uninstall"
-    ./uninstall_EFK.sh
+    echo "Timeout. Failed to make an kibana index"
     exit 1
   else
     echo "try again..."
@@ -141,8 +140,7 @@ do
     echo "make an index manually by curl command"
     curl -XPUT http://$ES_IP:9200/.kibana_1/_alias/.kibana
   elif [ $i == 10 ]; then
-    echo "Timeout. Start uninstall"
-    ./uninstall_EFK.sh
+    echo "Timeout. Failed to make a alias for kibana index"
     exit 1
   else
     echo "try again..."
@@ -166,8 +164,7 @@ do
   if [[ "$is_success" == *"logstash"* ]]; then
     break
   elif [ $i == 10 ]; then
-    echo "Timeout. Start uninstall"
-    ./uninstall_EFK.sh
+    echo "Timeout. Failed to make a default index 'logstash-*'"
     exit 1
   else
     echo "try again..."
@@ -183,8 +180,7 @@ do
   if [[ "$is_success" == *"200 OK"* ]]; then
     break
   elif [ $i == 10 ]; then
-    echo "Timeout. Start uninstall"
-    ./uninstall_EFK.sh
+    echo "Timeout. Kibana status is not ready"
     exit 1
   else
     echo "waiting for Kibana starts up..."
