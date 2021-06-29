@@ -1,0 +1,142 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-configmap
+  namespace: kube-logging
+data:
+  logstash.yml: |
+    http.host: "0.0.0.0"
+    path.config: /usr/share/logstash/pipeline
+  logstash.conf: |
+    # all input will come from filebeat, no local logs
+    input {
+      beats {
+        port => 5044
+      }
+    }
+    filter {
+      # Parse the http access log using a predifined
+      # Grok pattern.
+      grok {
+          patterns_dir => ["/opt/logstash/custom_patterns"]
+          match => { "message" => "%{METRIC:metric} %{POD:pod}" }
+      }
+
+      # The metrics filter plugin emits synthetic messages
+      # into the Logstash pipeline every 30 seconds.
+      metrics {
+          # The message will contain these fields x http response
+          # code. Fields will e.g. be:
+          #  - http_requests_total.200
+          #  - http_requests_total.404
+          #  - http_requests_total.503
+          meter => [
+              'http_requests_total.%{response}' 
+          ]
+
+          # We're not compute any meter rates as we're only exporting
+          # the total count towards Prometheus later.
+          rates => []
+
+          # We tag the synthetic message to pick it up in the
+          # output section below.
+          add_tag => "metric"
+          flush_interval => 30
+          ignore_older_than => 120
+      }
+    }
+    output {
+      elasticsearch {
+        index => "logstash-%{[@metadata][beat]}"
+        hosts => [ "${ES_HOSTS}" ]
+        user => "${ES_USER}"
+        password => "${ES_PASSWORD}"
+        #cacert => '/etc/logstash/certificates/ca.crt'
+      }
+    }
+  custom_patterns.conf: |
+    METRIC "__name__":".*?"
+    POD "pod":".*?"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: logstash
+  name: logstash
+  namespace: kube-logging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logstash
+  template:
+    metadata:
+      labels:
+        app: logstash
+    spec:
+      containers:
+      - image: docker.elastic.co/logstash/logstash:7.8.0
+        name: logstash
+        ports:
+        - containerPort: 25826
+        - containerPort: 5044
+        env:
+        - name: ES_HOSTS
+          value: "elasticsearch.kube-logging.svc.cluster.local:9200"
+        - name: ES_USER
+          value: "elastic"
+        - name: ES_PASSWORD
+          value: "changeme"
+          #valueFrom:
+          #  secretKeyRef:
+          #    name: elasticsearch-es-elastic-user
+          #    key: elastic
+        volumeMounts:
+        - name: config-volume
+          mountPath: /usr/share/logstash/config
+        - name: logstash-pipeline-volume
+          mountPath: /usr/share/logstash/pipeline
+        - name: custom-logstash-patterns-volume
+          mountPath: /opt/logstash/custom_patterns
+        #- name: cert-ca
+        #  mountPath: "/etc/logstash/certificates"
+        #  readOnly: true
+      #restartPolicy: OnFailure
+      volumes:
+      - name: config-volume
+        configMap:
+          name: logstash-configmap
+          items:
+            - key: logstash.yml
+              path: logstash.yml
+      - name: logstash-pipeline-volume
+        configMap:
+          name: logstash-configmap
+          items:
+            - key: logstash.conf
+              path: logstash.conf
+      - name: custom-logstash-patterns-volume
+        configMap:
+          name: logstash-configmap
+          items:
+            - key: custom_patterns.conf
+              path: custom_patterns.conf
+      #- name: cert-ca
+      #  secret:
+      #    secretName: elasticsearch-es-http-certs-public
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: logstash
+  namespace: kube-logging
+  labels:
+    app: logstash
+spec:
+  type: ClusterIP
+  selector:
+    app: logstash
+  ports:
+    - port: 5044
+      name: beats
