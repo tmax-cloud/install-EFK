@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-configmap
+  namespace: kube-logging
+data:
+  logstash.yml: |
+    http.host: "0.0.0.0"
+    path.config: /usr/share/logstash/pipeline
+  logstash.conf: |
+    input {
+      file {
+        path => "/var/log/containers/*.log"
+        start_position => "end"
+        sincedb_path => "/dev/null"
+      }
+    }
+    output {
+      elasticsearch {
+        index => "logstash-%{+YYYY.MM.dd}"
+        hosts => [ "${ES_HOSTS}" ]
+      }
+    }
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    app: logstash
+  name: logstash
+  namespace: kube-logging
+spec:
+  selector:
+    matchLabels:
+      app: logstash
+  template:
+    metadata:
+      labels:
+        app: logstash
+    spec:
+      tolerations:
+      - operator: Exists      
+      containers:
+      - image: docker.elastic.co/logstash/logstash:7.8.0
+        name: logstash
+        ports:
+        - containerPort: 25826
+        - containerPort: 5044
+        env:
+        - name: ES_HOSTS
+          value: "elasticsearch.kube-logging.svc.cluster.local:9200"
+        volumeMounts:
+        - name: config-volume
+          mountPath: /usr/share/logstash/config
+        - name: logstash-pipeline-volume
+          mountPath: /usr/share/logstash/pipeline
+        - name: varlog
+          mountPath: /var/log
+        securityContext:
+          privileged: true
+      volumes:
+      - name: config-volume
+        configMap:
+          name: logstash-configmap
+          items:
+            - key: logstash.yml
+              path: logstash.yml
+      - name: logstash-pipeline-volume
+        configMap:
+          name: logstash-configmap
+          items:
+            - key: logstash.conf
+              path: logstash.conf
+      - name: varlog
+        hostPath:
+          path: /var/log
