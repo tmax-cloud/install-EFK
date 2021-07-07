@@ -1,0 +1,135 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: filebeat-config
+  namespace: kube-logging
+  labels:
+    k8s-app: filebeat
+data:
+  filebeat.yml: |-
+    filebeat.inputs:
+    - type: container
+      paths:
+        - /var/log/containers/*.log
+      tail_files: true
+
+    output.logstash:
+      hosts: ['${LOGSTASH_HOST:logstash}:${LOGSTASH_PORT:5022}']
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: filebeat
+  namespace: kube-logging
+  labels:
+    k8s-app: filebeat
+spec:
+  selector:
+    matchLabels:
+      k8s-app: filebeat
+  template:
+    metadata:
+      labels:
+        k8s-app: filebeat
+    spec:
+      tolerations:
+      - operator: Exists
+      serviceAccountName: filebeat
+      terminationGracePeriodSeconds: 30
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+      - name: filebeat
+        image: docker.elastic.co/beats/filebeat:7.13.2
+        args: [
+          "-c", "/etc/filebeat.yml",
+          "-e",
+        ]
+        env:
+        - name: LOGSTASH_HOST
+          value: logstash.kube-logging.svc.cluster.local
+        - name: LOGSTASH_PORT
+          value: "5044"        
+        securityContext:
+          runAsUser: 0
+          privileged: true
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        volumeMounts:
+        - name: config
+          mountPath: /etc/filebeat.yml
+          readOnly: true
+          subPath: filebeat.yml
+        - name: data
+          mountPath: /usr/share/filebeat/data
+        - name: varlibdockercontainers
+          mountPath: /var/lib/docker/containers
+          readOnly: true
+        - name: varlog
+          mountPath: /var/log
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          defaultMode: 0640
+          name: filebeat-config
+      - name: varlibdockercontainers
+        hostPath:
+          path: /var/lib/docker/containers
+      - name: varlog
+        hostPath:
+          path: /var/log
+      # data folder stores a registry of read status for all files, so we don't send everything again on a Filebeat pod restart
+      - name: data
+        hostPath:
+          # When filebeat runs as non-root user, this directory needs to be writable by group (g+w).
+          path: /var/lib/filebeat-data
+          type: DirectoryOrCreate
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: filebeat
+subjects:
+- kind: ServiceAccount
+  name: filebeat
+  namespace: kube-logging
+roleRef:
+  kind: ClusterRole
+  name: filebeat
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: filebeat
+  labels:
+    k8s-app: filebeat
+rules:
+- apiGroups: [""] # "" indicates the core API group
+  resources:
+  - namespaces
+  - pods
+  - nodes
+  verbs:
+  - get
+  - watch
+  - list
+- apiGroups: ["apps"]
+  resources:
+    - replicasets
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: filebeat
+  namespace: kube-logging
+  labels:
+    k8s-app: filebeat
+---

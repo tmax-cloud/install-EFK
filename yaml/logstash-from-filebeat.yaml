@@ -9,10 +9,8 @@ data:
     path.config: /usr/share/logstash/pipeline
   logstash.conf: |
     input {
-      file {
-        path => "/var/log/containers/*.log"
-        start_position => "end"
-        sincedb_path => "/dev/null"
+      beats {
+        port => 5044
       }
     }
     output {
@@ -23,13 +21,14 @@ data:
     }
 ---
 apiVersion: apps/v1
-kind: DaemonSet
+kind: Deployment
 metadata:
   labels:
     app: logstash
   name: logstash
   namespace: kube-logging
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app: logstash
@@ -54,10 +53,9 @@ spec:
           mountPath: /usr/share/logstash/config
         - name: logstash-pipeline-volume
           mountPath: /usr/share/logstash/pipeline
-        - name: varlog
-          mountPath: /var/log
         securityContext:
           privileged: true
+          runAsUser: 0
       volumes:
       - name: config-volume
         configMap:
@@ -71,6 +69,18 @@ spec:
           items:
             - key: logstash.conf
               path: logstash.conf
-      - name: varlog
-        hostPath:
-          path: /var/log
+---              
+kind: Service
+apiVersion: v1
+metadata:
+  name: logstash
+  namespace: kube-logging
+  labels:
+    app: logstash
+spec:
+  type: ClusterIP
+  selector:
+    app: logstash
+  ports:
+    - port: 5044
+      name: beats 
