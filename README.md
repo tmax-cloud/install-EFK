@@ -79,8 +79,8 @@
 			* Kibana 의 버전
 			* ex) 7.2.0
 		* GATEKEEPER_VERSION
-		        * Gatekeeper 의 버전
-		        * ex) 10.0.0 
+			* Gatekeeper 의 버전
+			* ex) 10.0.0
 		* FLUENTD_VERSION
 			* FLUENTD_VERSION의 버전
 			* ex) v1.4.2-debian-elasticsearch-1.1
