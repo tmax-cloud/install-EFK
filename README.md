@@ -11,6 +11,7 @@
 ## Prerequisites
 * 필수 모듈
   * [RookCeph](https://github.com/tmax-cloud/hypersds-wiki/)
+  * [Hyperauth](https://github.com/tmax-cloud/hyperauth)
 * sidecar injection 사용시
   * [webhook](https://github.com/tmax-cloud/install-hypercloud/tree/5.0)
   * [efk-operator](https://github.com/tmax-cloud/efk-operator)
@@ -27,6 +28,7 @@
     $ cd $EFK_HOME
     $ export ES_VERSION=7.2.0
     $ export KIBANA_VERSION=7.2.0
+    $ export GATEKEEPER_VERSION=10.0.0
     $ export FLUENTD_VERSION=v1.4.2-debian-elasticsearch-1.1
     $ export BUSYBOX_VERSION=1.32.0
     $ export REGISTRY={ImageRegistryIP:Port}
@@ -37,6 +39,8 @@
     $ sudo docker save docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION} > elasticsearch_${ES_VERSION}.tar
     $ sudo docker pull docker.elastic.co/kibana/kibana:${KIBANA_VERSION}
     $ sudo docker save docker.elastic.co/kibana/kibana:${KIBANA_VERSION} > kibana_${KIBANA_VERSION}.tar
+    $ sudo docker pull quay.io/keycloak/keycloak-gatekeeper:${GATEKEEPER_VERSION}
+    $ sudo docker save quay.io/keycloak/keycloak-gatekeeper:${GATEKEEPER_VERSION} > gatekeeper_${GATEKEEPER_VERSION}.tar
     $ sudo docker pull fluent/fluentd-kubernetes-daemonset:${FLUENTD_VERSION}
     $ sudo docker save fluent/fluentd-kubernetes-daemonset:${FLUENTD_VERSION} > fluentd_${FLUENTD_VERSION}.tar
     $ sudo docker pull busybox:${BUSYBOX_VERSION}
@@ -47,16 +51,19 @@
     ```bash
     $ sudo docker load < elasticsearch_${ES_VERSION}.tar
     $ sudo docker load < kibana_${KIBANA_VERSION}.tar
+    $ sudo docker load < gatekeeper_${GATEKEEPER_VERSION}.tar
     $ sudo docker load < fluentd_${FLUENTD_VERSION}.tar
     $ sudo docker load < busybox_${BUSYBOX_VERSION}.tar
     
     $ sudo docker tag docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION} ${REGISTRY}/elasticsearch/elasticsearch:${ES_VERSION}
     $ sudo docker tag docker.elastic.co/kibana/kibana:${KIBANA_VERSION} ${REGISTRY}/kibana/kibana:${KIBANA_VERSION}
+    $ sudo docker tag quay.io/keycloak/keycloak-gatekeeper:${GATEKEEPER_VERSION} ${REGISTRY}/keycloak/keycloak-gatekeeper:${GATEKEEPER_VERSION}
     $ sudo docker tag fluent/fluentd-kubernetes-daemonset:${FLUENTD_VERSION} ${REGISTRY}/fluentd-kubernetes-daemonset:${FLUENTD_VERSION}
     $ sudo docker tag busybox:${BUSYBOX_VERSION} ${REGISTRY}/busybox:${BUSYBOX_VERSION}
     
     $ sudo docker push ${REGISTRY}/elasticsearch/elasticsearch:${ES_VERSION}
     $ sudo docker push ${REGISTRY}/kibana/kibana:${KIBANA_VERSION}
+    $ sudo docker push ${REGISTRY}/keycloak/keycloak-gatekeeper:${GATEKEEPER_VERSION}
     $ sudo docker push ${REGISTRY}/fluentd-kubernetes-daemonset:${FLUENTD_VERSION}
     $ sudo docker push ${REGISTRY}/busybox:${BUSYBOX_VERSION}
     ```
