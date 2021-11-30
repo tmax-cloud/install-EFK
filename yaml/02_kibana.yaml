@@ -31,6 +31,29 @@ spec:
         app: kibana
     spec:
       containers:
+      - name: gatekeeper
+        image: quay.io/keycloak/keycloak-gatekeeper:{GATEKEEPER_VERSION}
+        imagePullPolicy: Always
+        args:
+        - --client-id={HYPERAUTH_CLIENT}
+        - --client-secret={HYPERAUTH_CLIENT_SECRET}
+        - --listen=:3000
+        - --upstream-url=http://127.0.0.1:5601
+        - --discovery-url=https://{HYPERAUTH_URL}/auth/realms/{HYPERAUTH_REALM}
+        - --secure-cookie=false
+        - --skip-openid-provider-tls-verify=true
+        - --enable-self-signed-tls
+        - --skip-upstream-tls-verify=true
+        - --upstream-keepalives=false
+        - --enable-default-deny=true
+        - --enable-refresh-tokens=true
+        - --enable-metrics=true
+        - --encryption-key={ENCRYPTION_KEY}
+        - --resources=uri=/*|roles={HYPERAUTH_CLIENT}:{HYPERAUTH_CLIENT_ROLE}
+        - --verbose
+        ports:
+        - containerPort: 3000
+          name: service
       - name: kibana
         image: docker.elastic.co/kibana/kibana:{KIBANA_VERSION}
         resources:
@@ -59,8 +82,6 @@ data:
   kibana.yml: |
     server.name: kibana
     server.host: "0"
-    server.basePath: "/api/kibana"
-    server.rewriteBasePath: true
     elasticsearch.hosts: [ "http://elasticsearch:9200" ]
     elasticsearch.requestTimeout: "100000ms"
 kind: ConfigMap
