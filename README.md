@@ -29,6 +29,7 @@
     $ export ES_VERSION=7.2.0
     $ export KIBANA_VERSION=7.2.0
     $ export GATEKEEPER_VERSION=10.0.0
+    $ export HYPERAUTH_CLIENT
     $ export FLUENTD_VERSION=v1.4.2-debian-elasticsearch-1.1
     $ export BUSYBOX_VERSION=1.32.0
     $ export REGISTRY={ImageRegistryIP:Port}
