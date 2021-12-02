@@ -29,7 +29,6 @@
     $ export ES_VERSION=7.2.0
     $ export KIBANA_VERSION=7.2.0
     $ export GATEKEEPER_VERSION=10.0.0
-    $ export HYPERAUTH_CLIENT
     $ export FLUENTD_VERSION=v1.4.2-debian-elasticsearch-1.1
     $ export BUSYBOX_VERSION=1.32.0
     $ export REGISTRY={ImageRegistryIP:Port}
@@ -82,14 +81,24 @@
 		* GATEKEEPER_VERSION
 			* Gatekeeper 의 버전
 			* ex) 10.0.0
+        * HYPERAUTH_URL
+            * Hyperauth 의 URL
+            * ex) hyperauth.org
+        * KIBANA_CLIENT_SECRET
+            * Hyperauth 에 생성된 kibana client 의 secret
+            * ex) e720562b-e986-47ff-b040-9513b91989b9
+        * ENCRYPTION_KEY
+            * Session 암호화에 사용할 랜덤 암호화 키
+            * 설정 참고: https://gogatekeeper.github.io/configuration/#encryption-key
+            * ex) AgXa7xRcoClDEU0ZDSH4X0XhL5Qy2Z2j
 		* FLUENTD_VERSION
-			* FLUENTD_VERSION의 버전
+			* FLUENTD_VERSION 의 버전
 			* ex) v1.4.2-debian-elasticsearch-1.1
 		* BUSYBOX_VERSION
-			* BUSYBOX_VERSION의 버전
+			* BUSYBOX_VERSION 의 버전
 			* ex) 1.32.0
 		* STORAGECLASS_NAME
-			* ElasticSearch가 사용할 StorageClass의 이름
+			* ElasticSearch가 사용할 StorageClass 의 이름
             * {STORAGECLASS_NAME} 그대로 유지시 default storageclass 사용
 			* ex) csi-cephfs-sc
 		* REGISTRY
@@ -126,7 +135,7 @@
     ```bash
     $ kubectl create ns kube-logging
     ```
-2. 버전 export
+2. 변수 export
     * 다운 받을 버전을 export한다. 
     ```bash
     $ export ES_VERSION=7.2.0
@@ -136,6 +145,13 @@
     $ export BUSYBOX_VERSION=1.32.0
     $ export STORAGECLASS_NAME=csi-cephfs-sc
     ```
+    * Hyperauth 연동 관련 스펙을 export 한다.
+    ```bash
+    $ export HYPERAUTH_URL=hyperauth.org
+    $ export KIBANA_CLIENT_SECRET=e720562b-e986-47ff-b040-9513b91989b9
+    $ export ENCRYPTION_KEY=e720562b-e986-47ff-b040-9513b91989b9
+    ```
+    
 
 * 비고  
     * 이하 인스톨 가이드는 StorageClass 이름이 csi-cephfs-sc 라는 가정하에 진행한다.
@@ -155,6 +171,10 @@
 	$ sed -i 's/{ES_VERSION}/'${ES_VERSION}'/g' 01_elasticsearch.yaml
 	$ sed -i 's/{STORAGECLASS_NAME}/'${STORAGECLASS_NAME}'/g' 01_elasticsearch.yaml
 	$ sed -i 's/{KIBANA_VERSION}/'${KIBANA_VERSION}'/g' 02_kibana.yaml
+    $ sed -i 's/{GATEKEEPER_VERSION}/'${GATEKEEPER_VERSION}'/g' 02_kibana.yaml
+    $ sed -i 's/{HYPERAUTH_URL}/'${HYPERAUTH_URL}'/g' 02_kibana.yaml
+    $ sed -i 's/{KIBANA_CLIENT_SECRET}/'${KIBANA_CLIENT_SECRET}'/g' 02_kibana.yaml
+    $ sed -i 's/{ENCRYPTION_KEY}/'${ENCRYPTION_KEY}'/g' 02_kibana.yaml
 	$ sed -i 's/{FLUENTD_VERSION}/'${FLUENTD_VERSION}'/g' 03_fluentd.yaml
   	$ sed -i 's/{FLUENTD_VERSION}/'${FLUENTD_VERSION}'/g' 03_fluentd_cri-o.yaml
 	```
@@ -164,6 +184,7 @@
 	$ sed -i 's/docker.elastic.co\/elasticsearch\/elasticsearch/'${REGISTRY}'\/elasticsearch\/elasticsearch/g' 01_elasticsearch.yaml
 	$ sed -i 's/busybox/'${REGISTRY}'\/busybox/g' 01_elasticsearch.yaml
 	$ sed -i 's/docker.elastic.co\/kibana\/kibana/'${REGISTRY}'\/kibana\/kibana/g' 02_kibana.yaml
+    $ sed -i 's/quay.io\/keycloak\/keycloak-gatekeeper/'${REGISTRY}'\/keycloak\/keycloak-gatekeeper/g' 02_kibana.yaml
 	$ sed -i 's/fluent\/fluentd-kubernetes-daemonset/'${REGISTRY}'\/fluentd-kubernetes-daemonset/g' 03_fluentd.yaml
 	$ sed -i 's/fluent\/fluentd-kubernetes-daemonset/'${REGISTRY}'\/fluentd-kubernetes-daemonset/g' 03_fluentd_cri-o.yaml
 	```    
@@ -178,15 +199,18 @@
 * 비고 :
     * StorageClass 이름이 csi-cephfs-sc가 아니라면 환경에 맞게 수정해야 한다.
 
-## Step 2. kibana 설치
+## Step 2. Kibana 설치
 * 목적 : `EFK의 UI 모듈인 kibana를 설치`
 * 생성 순서 : [02_kibana.yaml](yaml/02_kibana.yaml) 실행 
     ```bash
     $ kubectl apply -f 02_kibana.yaml
     ```
 * 비고 :
-    * kibana pod가 running임을 확인한 뒤 http://$KIBANA_URL/api/kibana에 접속해 정상 동작을 확인한다.
-    * $KIBANA_URL은 `kubectl get svc -n kube-logging | grep kibana`를 통해 조회 가능
+    * Kibana pod 가 running 임을 확인한 뒤 http://$KIBANA_SERVICE_IP:3000/ 에 접속한다.
+    * Hyperauth 에서 Kibana 를 사용하고자 하는 사용자의 계정에 kibana-manager role 을 할당한다.
+    * 해당 Hyperauth 사용자 계정으로 로그인해서 정상 작동을 확인한다.
+    * $KIBANA_SERVICE_IP 는 `kubectl get svc -n kube-logging | grep kibana`를 통해 조회 가능
+![image](figure/reg-role.PNG)
 ![image](figure/kibana-ui.png)   
 
 ## Step 3. fluentd 설치

@@ -7,6 +7,10 @@ source ./efk.config
 
 echo "ES_VERSION = $ES_VERSION"
 echo "KIBANA_VERSION = $KIBANA_VERSION"
+echo "GATEKEEPER_VERSION = $GATEKEEPER_VERSION"
+echo "HYPERAUTH_URL = $HYPERAUTH_URL"
+echo "KIBANA_CLIENT_SECRET = $KIBANA_CLIENT_SECRET"
+echo "ENCRYPTION_KEY = $ENCRYPTION_KEY"
 echo "FLUENTD_VERSION = $FLUENTD_VERSION"
 echo "BUSYBOX_VERSION = $BUSYBOX_VERSION"
 if [ $STORAGECLASS_NAME != "{STORAGECLASS_NAME}" ]; then
@@ -23,6 +27,10 @@ sed -i 's/{BUSYBOX_VERSION}/'${BUSYBOX_VERSION}'/g' 01_elasticsearch.yaml
 sed -i 's/{ES_VERSION}/'${ES_VERSION}'/g' 01_elasticsearch.yaml
 sed -i 's/{STORAGECLASS_NAME}/'${STORAGECLASS_NAME}'/g' 01_elasticsearch.yaml
 sed -i 's/{KIBANA_VERSION}/'${KIBANA_VERSION}'/g' 02_kibana.yaml
+sed -i 's/{GATEKEEPER_VERSION}/'${GATEKEEPER_VERSION}'/g' 02_kibana.yaml
+sed -i 's/{HYPERAUTH_URL}/'${HYPERAUTH_URL}'/g' 02_kibana.yaml
+sed -i 's/{KIBANA_CLIENT_SECRET}/'${KIBANA_CLIENT_SECRET}'/g' 02_kibana.yaml
+sed -i 's/{ENCRYPTION_KEY}/'${ENCRYPTION_KEY}'/g' 02_kibana.yaml
 sed -i 's/{FLUENTD_VERSION}/'${FLUENTD_VERSION}'/g' 03_fluentd.yaml
 sed -i 's/{FLUENTD_VERSION}/'${FLUENTD_VERSION}'/g' 03_fluentd_cri-o.yaml
 
@@ -30,6 +38,7 @@ if [ $REGISTRY != "{REGISTRY}" ]; then
   sed -i 's/docker.elastic.co\/elasticsearch\/elasticsearch/'${REGISTRY}'\/elasticsearch\/elasticsearch/g' 01_elasticsearch.yaml
   sed -i 's/busybox/'${REGISTRY}'\/busybox/g' 01_elasticsearch.yaml
   sed -i 's/docker.elastic.co\/kibana\/kibana/'${REGISTRY}'\/kibana\/kibana/g' 02_kibana.yaml
+  sed -i 's/quay.io\/keycloak\/keycloak-gatekeeper/'${REGISTRY}'\/keycloak\/keycloak-gatekeeper/g' 02_kibana.yaml
   sed -i 's/fluent\/fluentd-kubernetes-daemonset/'${REGISTRY}'\/fluentd-kubernetes-daemonset/g' 03_fluentd.yaml
   sed -i 's/fluent\/fluentd-kubernetes-daemonset/'${REGISTRY}'\/fluentd-kubernetes-daemonset/g' 03_fluentd_cri-o.yaml
 fi

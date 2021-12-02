@@ -35,11 +35,11 @@ spec:
         image: quay.io/keycloak/keycloak-gatekeeper:{GATEKEEPER_VERSION}
         imagePullPolicy: Always
         args:
-        - --client-id={HYPERAUTH_CLIENT}
-        - --client-secret={HYPERAUTH_CLIENT_SECRET}
+        - --client-id=kibana
+        - --client-secret={KIBANA_CLIENT_SECRET}
         - --listen=:3000
         - --upstream-url=http://127.0.0.1:5601
-        - --discovery-url=https://{HYPERAUTH_URL}/auth/realms/{HYPERAUTH_REALM}
+        - --discovery-url=https://{HYPERAUTH_URL}/auth/realms/tmax
         - --secure-cookie=false
         - --skip-openid-provider-tls-verify=true
         - --enable-self-signed-tls
@@ -49,7 +49,7 @@ spec:
         - --enable-refresh-tokens=true
         - --enable-metrics=true
         - --encryption-key={ENCRYPTION_KEY}
-        - --resources=uri=/*|roles={HYPERAUTH_CLIENT}:{HYPERAUTH_CLIENT_ROLE}
+        - --resources=uri=/*|roles=kibana:kibana-manager
         - --verbose
         ports:
         - containerPort: 3000
