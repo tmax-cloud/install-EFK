@@ -90,7 +90,10 @@
         * ENCRYPTION_KEY
             * Session 암호화에 사용할 랜덤 암호화 키
             * 설정 참고: https://gogatekeeper.github.io/configuration/#encryption-key
-            * ex) AgXa7xRcoClDEU0ZDSH4X0XhL5Qy2Z2j
+            * ex) AgXa7xRcoClDEU0ZDSH4X0XhL5Qy2Z2j 
+		* CUSTOM_DOMAIN_NAME
+			* Ingress로 접근 요청할 사용자 지정 도메인 이름
+			* ex) tmaxcloud.org
 		* FLUENTD_VERSION
 			* FLUENTD_VERSION 의 버전
 			* ex) v1.4.2-debian-elasticsearch-1.1
@@ -149,7 +152,8 @@
     ```bash
     $ export HYPERAUTH_URL=hyperauth.org
     $ export KIBANA_CLIENT_SECRET=e720562b-e986-47ff-b040-9513b91989b9
-    $ export ENCRYPTION_KEY=e720562b-e986-47ff-b040-9513b91989b9
+    $ export ENCRYPTION_KEY=AgXa7xRcoClDEU0ZDSH4X0XhL5Qy2Z2j
+    $ export CUSTOM_DOMAIN_NAME=tmaxcloud.org
     ```
     
 
@@ -157,13 +161,13 @@
     * 이하 인스톨 가이드는 StorageClass 이름이 csi-cephfs-sc 라는 가정하에 진행한다.
 
 ## Install Steps
-0. [efk yaml 수정](https://github.com/tmax-cloud/hypercloud-install-guide/tree/master/EFK#step-0-efk-yaml-%EC%88%98%EC%A0%95)
-1. [ElasticSearch 설치](https://github.com/tmax-cloud/hypercloud-install-guide/tree/master/EFK#step-2-elasticsearch-%EC%84%A4%EC%B9%98)
-2. [kibana 설치](https://github.com/tmax-cloud/hypercloud-install-guide/tree/master/EFK#step-3-kibana-%EC%84%A4%EC%B9%98)
-3. [fluentd 설치](https://github.com/tmax-cloud/hypercloud-install-guide/tree/master/EFK#step-4-fluentd-%EC%84%A4%EC%B9%98)
+0. EFK yaml 수정
+1. ElasticSearch 설치
+2. Kibana 설치
+3. Fluentd 설치
 
-## Step 0. efk yaml 수정
-* 목적 : `efk yaml에 이미지 registry, 버전 및 노드 정보를 수정`
+## Step 0. EFK yaml 수정
+* 목적 : `EFK yaml에 이미지 registry, 버전 및 노드 정보를 수정`
 * 생성 순서 : 
     * 아래의 command를 사용하여 사용하고자 하는 image 버전을 입력한다.
 	```bash
@@ -175,6 +179,7 @@
     $ sed -i 's/{HYPERAUTH_URL}/'${HYPERAUTH_URL}'/g' 02_kibana.yaml
     $ sed -i 's/{KIBANA_CLIENT_SECRET}/'${KIBANA_CLIENT_SECRET}'/g' 02_kibana.yaml
     $ sed -i 's/{ENCRYPTION_KEY}/'${ENCRYPTION_KEY}'/g' 02_kibana.yaml
+    $ sed -i 's/{CUSTOM_DOMAIN_NAME}/'${CUSTOM_DOMAIN_NAME}'/g' 02_kibana.yaml
 	$ sed -i 's/{FLUENTD_VERSION}/'${FLUENTD_VERSION}'/g' 03_fluentd.yaml
   	$ sed -i 's/{FLUENTD_VERSION}/'${FLUENTD_VERSION}'/g' 03_fluentd_cri-o.yaml
 	```
@@ -200,21 +205,21 @@
     * StorageClass 이름이 csi-cephfs-sc가 아니라면 환경에 맞게 수정해야 한다.
 
 ## Step 2. Kibana 설치
-* 목적 : `EFK의 UI 모듈인 kibana를 설치`
+* 목적 : `EFK의 UI 모듈인 Kibana를 설치`
 * 생성 순서 : [02_kibana.yaml](yaml/02_kibana.yaml) 실행 
     ```bash
     $ kubectl apply -f 02_kibana.yaml
     ```
 * 비고 :
-    * Kibana pod 가 running 임을 확인한 뒤 http://$KIBANA_SERVICE_IP:3000/ 에 접속한다.
+    * Kibana pod 가 running 임을 확인한 뒤 https://kibana.${CUSTOM_DOMAIN_NAME}/ 에 접속한다.
     * Hyperauth 에서 Kibana 를 사용하고자 하는 사용자의 계정에 kibana-manager role 을 할당한다.
     * 해당 Hyperauth 사용자 계정으로 로그인해서 정상 작동을 확인한다.
-    * $KIBANA_SERVICE_IP 는 `kubectl get svc -n kube-logging | grep kibana`를 통해 조회 가능
+    * $CUSTOM_DOMAIN_NAME 은 kubectl get ingress -n kube-logging | grep kibana를 통해 조회 가능
 ![image](figure/reg-role.PNG)
 ![image](figure/kibana-ui.png)   
 
-## Step 3. fluentd 설치
-* 목적 : `EFK의 agent daemon 역할을 수행하는 fluentd를 설치`
+## Step 3. Fluentd 설치
+* 목적 : `EFK의 agent daemon 역할을 수행하는 Fluentd를 설치`
 * 생성 순서 : 03_fluentd~.yaml 실행  
   1. Container Runtime이 cri-o 인 경우  
     * [03_fluentd_cri-o.yaml](yaml/03_fluentd_cri-o.yaml) 실행
