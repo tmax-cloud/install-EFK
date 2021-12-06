@@ -115,7 +115,7 @@ metadata:
 spec:
   ingressClassName: tmax-cloud
   rules:
-  - host: kibana.tmaxcloud.org
+  - host: kibana.{CUSTOM_DOMAIN_NAME}
     http:
       paths:
       - backend:
@@ -127,7 +127,7 @@ spec:
         pathType: Prefix
   tls:
   - hosts:
-    - kibana.tmaxcloud.org
+    - kibana.{CUSTOM_DOMAIN_NAME}
 
 ---
 apiVersion: cert-manager.io/v1
