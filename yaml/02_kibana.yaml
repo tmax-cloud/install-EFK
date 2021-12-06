@@ -5,11 +5,13 @@ metadata:
   namespace: kube-logging
   labels:
     app: kibana
+  annotations:
+    traefik.ingress.kubernetes.io/service.serverstransport: tmaxcloud@file
 spec:
   type: ClusterIP
   ports:
-  - port: 5601
-    targetPort: 5601
+  - port: 443
+    targetPort: 3000
   selector:
     app: kibana
 ---
@@ -32,30 +34,37 @@ spec:
     spec:
       containers:
       - name: gatekeeper
-        image: quay.io/keycloak/keycloak-gatekeeper:{GATEKEEPER_VERSION}
+        image: quay.io/keycloak/keycloak-gatekeeper:10.0.0
         imagePullPolicy: Always
         args:
         - --client-id=kibana
-        - --client-secret={KIBANA_CLIENT_SECRET}
+        - --client-secret=e720562b-e986-47ff-b040-9513b91989b9
         - --listen=:3000
         - --upstream-url=http://127.0.0.1:5601
-        - --discovery-url=https://{HYPERAUTH_URL}/auth/realms/tmax
+        - --discovery-url=https://hyperauth.org/auth/realms/tmax
         - --secure-cookie=false
         - --skip-openid-provider-tls-verify=true
-        - --enable-self-signed-tls
+        - --enable-self-signed-tls=false
+        - --tls-cert=/etc/secrets/tls.crt 
+        - --tls-private-key=/etc/secrets/tls.key
+        - --tls-ca-certificate=/etc/secrets/ca.crt
         - --skip-upstream-tls-verify=true
         - --upstream-keepalives=false
         - --enable-default-deny=true
         - --enable-refresh-tokens=true
         - --enable-metrics=true
-        - --encryption-key={ENCRYPTION_KEY}
+        - --encryption-key=AgXa7xRcoClDEU0ZDSH4X0XhL5Qy2Z2j
         - --resources=uri=/*|roles=kibana:kibana-manager
         - --verbose
         ports:
         - containerPort: 3000
           name: service
+        volumeMounts:
+          - name: secret
+            mountPath: "/etc/secrets"
+            readOnly: true
       - name: kibana
-        image: docker.elastic.co/kibana/kibana:{KIBANA_VERSION}
+        image: docker.elastic.co/kibana/kibana:7.2.0
         resources:
           limits:
             cpu: 300m
@@ -73,6 +82,9 @@ spec:
           name: config
           subPath: kibana.yml
       volumes:
+      - name: secret
+        secret:
+          secretName: kibana-secret
       - name: config
         configMap:
           name: kibana-config
@@ -89,3 +101,52 @@ metadata:
   name: kibana-config
   namespace: kube-logging
 
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  labels:
+    ingress.tmaxcloud.org/name: kibana
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    cert-manager.io/cluster-issuer: tmaxcloud-issuer
+  name: kibana
+  namespace: kube-logging
+spec:
+  ingressClassName: tmax-cloud
+  rules:
+  - host: kibana.tmaxcloud.org
+    http:
+      paths:
+      - backend:
+          service:
+            name: kibana
+            port:
+              number: 443
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - kibana.tmaxcloud.org
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: kibana-cert
+  namespace: kube-logging
+spec:
+  secretName: kibana-secret
+  isCA: false
+  usages:
+    - digital signature
+    - key encipherment
+    - server auth
+    - client auth
+  dnsNames:
+    - "tmax-cloud"
+    - "kibana.kube-logging.svc"
+  issuerRef:
+    kind: ClusterIssuer
+    group: cert-manager.io
+    name: tmaxcloud-issuer
