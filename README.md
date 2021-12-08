@@ -76,6 +76,9 @@
 		* BUSYBOX_VERSION
 			* BUSYBOX_VERSION의 버전
 			* ex) 1.32.0
+		* CUSTOM_DOMAIN_NAME
+			* Ingress로 접근 요청할 사용자 지정 도메인 이름
+			* ex) tmaxcloud.org
 		* STORAGECLASS_NAME
 			* ElasticSearch가 사용할 StorageClass의 이름
             * {STORAGECLASS_NAME} 그대로 유지시 default storageclass 사용
@@ -123,18 +126,22 @@
     $ export BUSYBOX_VERSION=1.32.0
     $ export STORAGECLASS_NAME=csi-cephfs-sc
     ```
+    * Ingress 관련 스펙을 export 한다.
+    ```bash
+    $ export CUSTOM_DOMAIN_NAME=tmaxcloud.org
+    ```
 
 * 비고  
     * 이하 인스톨 가이드는 StorageClass 이름이 csi-cephfs-sc 라는 가정하에 진행한다.
 
 ## Install Steps
-0. [efk yaml 수정](https://github.com/tmax-cloud/hypercloud-install-guide/tree/master/EFK#step-0-efk-yaml-%EC%88%98%EC%A0%95)
+0. [EFK yaml 수정](https://github.com/tmax-cloud/hypercloud-install-guide/tree/master/EFK#step-0-efk-yaml-%EC%88%98%EC%A0%95)
 1. [ElasticSearch 설치](https://github.com/tmax-cloud/hypercloud-install-guide/tree/master/EFK#step-2-elasticsearch-%EC%84%A4%EC%B9%98)
-2. [kibana 설치](https://github.com/tmax-cloud/hypercloud-install-guide/tree/master/EFK#step-3-kibana-%EC%84%A4%EC%B9%98)
-3. [fluentd 설치](https://github.com/tmax-cloud/hypercloud-install-guide/tree/master/EFK#step-4-fluentd-%EC%84%A4%EC%B9%98)
+2. [Kibana 설치](https://github.com/tmax-cloud/hypercloud-install-guide/tree/master/EFK#step-3-kibana-%EC%84%A4%EC%B9%98)
+3. [Fluentd 설치](https://github.com/tmax-cloud/hypercloud-install-guide/tree/master/EFK#step-4-fluentd-%EC%84%A4%EC%B9%98)
 
-## Step 0. efk yaml 수정
-* 목적 : `efk yaml에 이미지 registry, 버전 및 노드 정보를 수정`
+## Step 0. EFK yaml 수정
+* 목적 : `EFK yaml에 이미지 registry, 버전 및 노드 정보를 수정`
 * 생성 순서 : 
     * 아래의 command를 사용하여 사용하고자 하는 image 버전을 입력한다.
 	```bash
@@ -142,6 +149,7 @@
 	$ sed -i 's/{ES_VERSION}/'${ES_VERSION}'/g' 01_elasticsearch.yaml
 	$ sed -i 's/{STORAGECLASS_NAME}/'${STORAGECLASS_NAME}'/g' 01_elasticsearch.yaml
 	$ sed -i 's/{KIBANA_VERSION}/'${KIBANA_VERSION}'/g' 02_kibana.yaml
+	$ sed -i 's/{CUSTOM_DOMAIN_NAME}/'${CUSTOM_DOMAIN_NAME}'/g' 02_kibana.yaml
 	$ sed -i 's/{FLUENTD_VERSION}/'${FLUENTD_VERSION}'/g' 03_fluentd.yaml
   	$ sed -i 's/{FLUENTD_VERSION}/'${FLUENTD_VERSION}'/g' 03_fluentd_cri-o.yaml
 	```
@@ -165,18 +173,18 @@
 * 비고 :
     * StorageClass 이름이 csi-cephfs-sc가 아니라면 환경에 맞게 수정해야 한다.
 
-## Step 2. kibana 설치
+## Step 2. Kibana 설치
 * 목적 : `EFK의 UI 모듈인 kibana를 설치`
 * 생성 순서 : [02_kibana.yaml](yaml/02_kibana.yaml) 실행 
     ```bash
     $ kubectl apply -f 02_kibana.yaml
     ```
 * 비고 :
-    * kibana pod가 running임을 확인한 뒤 http://$KIBANA_URL/api/kibana에 접속해 정상 동작을 확인한다.
-    * $KIBANA_URL은 `kubectl get svc -n kube-logging | grep kibana`를 통해 조회 가능
+    * kibana pod가 running임을 확인한 뒤 https://kibana.${CUSTOM_DOMAIN_NAME}/ 에 접속해 정상 동작을 확인한다.
+    * $KIBANA_URL은 `kubectl get ingress -n kube-logging | grep kibana`를 통해 조회 가능
 ![image](figure/kibana-ui.png)   
 
-## Step 3. fluentd 설치
+## Step 3. Fluentd 설치
 * 목적 : `EFK의 agent daemon 역할을 수행하는 fluentd를 설치`
 * 생성 순서 : 03_fluentd~.yaml 실행  
   1. Container Runtime이 cri-o 인 경우  
