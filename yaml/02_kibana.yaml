@@ -30,6 +30,7 @@ spec:
       labels:
         app: kibana
     spec:
+      serviceAccount: efk-service-account
       containers:
       - name: kibana
         image: docker.elastic.co/kibana/kibana:{KIBANA_VERSION}
