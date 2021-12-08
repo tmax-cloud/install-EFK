@@ -59,12 +59,36 @@ data:
   kibana.yml: |
     server.name: kibana
     server.host: "0"
-    server.basePath: "/api/kibana"
-    server.rewriteBasePath: true
     elasticsearch.hosts: [ "http://elasticsearch:9200" ]
     elasticsearch.requestTimeout: "100000ms"
 kind: ConfigMap
 metadata:
   name: kibana-config
   namespace: kube-logging
-
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  labels:
+    ingress.tmaxcloud.org/name: kibana
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    cert-manager.io/cluster-issuer: tmaxcloud-issuer
+  name: kibana
+  namespace: kube-logging
+spec:
+  ingressClassName: tmax-cloud
+  rules:
+  - host: kibana.{CUSTOM_DOMAIN_NAME}
+    http:
+      paths:
+      - backend:
+          service:
+            name: kibana
+            port:
+              number: 5601
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - kibana.{CUSTOM_DOMAIN_NAME}
