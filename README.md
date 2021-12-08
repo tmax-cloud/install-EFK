@@ -181,7 +181,7 @@
     ```
 * 비고 :
     * kibana pod가 running임을 확인한 뒤 https://kibana.${CUSTOM_DOMAIN_NAME}/ 에 접속해 정상 동작을 확인한다.
-    * $KIBANA_URL은 `kubectl get ingress -n kube-logging | grep kibana`를 통해 조회 가능
+    * $CUSTOM_DOMAIN_NAME은 `kubectl get ingress -n kube-logging | grep kibana`를 통해 조회 가능
 ![image](figure/kibana-ui.png)   
 
 ## Step 3. Fluentd 설치
