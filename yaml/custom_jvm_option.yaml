@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: Secret
-metadata:
-  name: es-custom-config
-  namespace: kube-logging
-stringData:
-  jvm.options: |-
-
