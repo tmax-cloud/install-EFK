@@ -33,7 +33,7 @@ spec:
       serviceAccount: efk-service-account
       containers:
       - name: kibana
-        image: docker.elastic.co/kibana/kibana:7.2.0
+        image: docker.elastic.co/kibana/kibana:{KIBANA_VERSION}
         resources:
           limits:
             cpu: 300m
@@ -80,7 +80,7 @@ metadata:
 spec:
   ingressClassName: tmax-cloud
   rules:
-  - host: kibana.tmaxcloud.org
+  - host: kibana.{CUSTOM_DOMAIN_NAME}
     http:
       paths:
       - backend:
@@ -92,4 +92,4 @@ spec:
         pathType: Prefix
   tls:
   - hosts:
-      - kibana.tmaxcloud.org
+      - kibana.{CUSTOM_DOMAIN_NAME}
