@@ -92,4 +92,4 @@ spec:
         pathType: Prefix
   tls:
   - hosts:
-    - kibana.tmaxcloud.org
+      - kibana.tmaxcloud.org
