@@ -73,9 +73,7 @@ spec:
           - name: cluster.initial_master_nodes
             value:  "es-cluster-0" #"es-cluster-0,es-cluster-1,es-cluster-2"
           - name: ES_JAVA_OPTS
-            value: "-Xms2g -Xmx2g -Dlog4j2.formatMsgNoLookups=true"
-          - name: LOG4J_FORMAT_MSG_NO_LOOKUPS
-            value: "true"
+            value: "-Xms2g -Xmx2g"
       initContainers:
       - name: fix-permissions
         image: busybox:{BUSYBOX_VERSION}
