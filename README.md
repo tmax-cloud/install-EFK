@@ -2,10 +2,17 @@
 # EFK 설치 가이드
 
 ## 구성 요소 및 버전
-* elasticsearch ([docker.elastic.co/elasticsearch/elasticsearch:7.2.0](https://www.docker.elastic.co/r/elasticsearch/elasticsearch:7.2.0))
-* kibana ([docker.elastic.co/kibana/kibana:7.2.0](https://www.docker.elastic.co/r/kibana/kibana?limit=50&offset=0&show_snapshots=false))
+* elasticsearch ([docker.elastic.co/elasticsearch/elasticsearch:7.16.1](https://www.docker.elastic.co/r/elasticsearch/elasticsearch:7.16.1))
+* kibana ([docker.elastic.co/kibana/kibana:7.16.1](https://www.docker.elastic.co/r/kibana/kibana?limit=50&offset=0&show_snapshots=false))
 * fluentd ([fluent/fluentd-kubernetes-daemonset:v1.4.2-debian-elasticsearch-1.1](https://hub.docker.com/layers/fluent/fluentd-kubernetes-daemonset/v1.4.2-debian-elasticsearch-1.1/images/sha256-ce4885865850d3940f5e5318066897b8502c0b955066392de7fd4ef6f1fd4275?context=explore))
 * busybox ([busybox:1.32.0](https://hub.docker.com/layers/busybox/library/busybox/1.32.0/images/sha256-414aeb860595d7078cbe87abaeed05157d6b44907fbd7db30e1cfba9b6902448?context=explore))
+
+## Log4j 보안 취약점 조치 사항
+* 목적: Log4j 2.11.1 버전을 사용하는 Elasticsearch에 대하여 [CVE-2021-44228](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228), [CVE-2021-45046](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-45046)에 해당하는 취약점을 보완
+* 조치 내용:
+	* Elasticsearch: 7.2.0에서 7.16.1 버전으로 upgrade 적용
+		* [7.16.1](https://www.elastic.co/guide/en/elasticsearch/reference/current/release-notes-7.16.1.html): Disable JNDI lookups via the log4j2.formatMsgNoLookups system property 및 log4j jar to remove the JndiLookup class from the classpath 패치 적용
+	* Kibana: Elasticsearch와의 호환성을 위해 7.2.0에서 7.16.1 버전으로 upgrade 적용
 
 ## Prerequisites
 * 필수 모듈
@@ -20,10 +27,10 @@
 	* 환경에 맞는 config 내용 작성
 		* ES_VERSION
 			* ElasticSearch의 버전
-			* ex) 7.2.0
+			* ex) 7.16.1
 		* KIBANA_VERSION
 			* KIBANA_VERSION의 버전
-			* ex) 7.2.0
+			* ex) 7.16.1
 		* FLUENTD_VERSION
 			* FLUENTD_VERSION의 버전
 			* ex) v1.4.2-debian-elasticsearch-1.1
@@ -67,8 +74,8 @@
 2. 버전 export
     * 다운 받을 버전을 export한다. 
     ```bash
-    $ export ES_VERSION=7.2.0
-    $ export KIBANA_VERSION=7.2.0
+    $ export ES_VERSION=7.16.1
+    $ export KIBANA_VERSION=7.16.1
     $ export FLUENTD_VERSION=v1.4.2-debian-elasticsearch-1.1
     $ export BUSYBOX_VERSION=1.32.0
     $ export STORAGECLASS_NAME=csi-cephfs-sc
