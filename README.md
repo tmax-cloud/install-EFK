@@ -222,7 +222,7 @@
     * Hyperauth 에서 Kibana 를 사용하고자 하는 사용자의 계정에 kibana-manager role 을 할당한다.
     * 해당 Hyperauth 사용자 계정으로 로그인해서 정상 작동을 확인한다.
     * $CUSTOM_DOMAIN_NAME 은 kubectl get ingress -n kube-logging | grep kibana를 통해 조회 가능
-![image](figure/reg-role.PNG)
+![image](figure/reg-role.png)
 ![image](figure/kibana-ui.png)   
 
 ## Step 3. Fluentd 설치
@@ -243,15 +243,15 @@
     * 설치 시, default로 생성되는 watch-history-ilm-policy를 적용시키게 되어있다.
     * watch-history-ilm-policy는 생성된 지 7일이 지난 인덱스는 자동으로 삭제한다.
     * policy를 수정하고 싶다면, kibana에서 아래와 같이 Index Lifecycle Policies 메뉴를 들어가서 watch-history-ilm-policy를 클릭한다.
-    ![image](figure/ILM-menu.PNG)
+    ![image](figure/ILM-menu.png)
     * 해당 페이지에서 policy를 커스터마이징 후, Save policy를 클릭한다.
-    ![image](figure/ILM-settings.PNG)
+    ![image](figure/ILM-settings.png)
 
 
 * ElasticSearch에 HTTP 콜 하는 방법
     * Management 메뉴의 Dev tools 클릭
     * HTTP 콜 작성 후 ▶ 버튼 클릭
-        ![image](figure/call-tab.PNG)
+        ![image](figure/call-tab.png)
 
 * 에러 해결법
     * Limit of total fields [1000] in index 에러
@@ -267,7 +267,7 @@
         * 원인 : 디스크 사용량이 flood-stage watermark 수치를 넘어서면 ES가 자동적으로 저장을 막음 (default 값은 95%)
         * 해결 (택1)
             * 필요없는 인덱스를 삭제해서 용량 확보
-            ![image](figure/delete-index.PNG)
+            ![image](figure/delete-index.png)
             * HTTP콜을 통해 read-only 해제하기
             ```
             PUT /{index 이름}/_settings
