@@ -92,4 +92,4 @@ spec:
         pathType: Prefix
   tls:
   - hosts:
-    - kibana.{CUSTOM_DOMAIN_NAME}
+      - kibana.{CUSTOM_DOMAIN_NAME}
