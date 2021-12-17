@@ -2,11 +2,18 @@
 # EFK 설치 가이드
 
 ## 구성 요소 및 버전
-* elasticsearch ([docker.elastic.co/elasticsearch/elasticsearch:7.2.0](https://www.docker.elastic.co/r/elasticsearch/elasticsearch:7.2.0))
-* kibana ([docker.elastic.co/kibana/kibana:7.2.0](https://www.docker.elastic.co/r/kibana/kibana?limit=50&offset=0&show_snapshots=false))
+* elasticsearch ([docker.elastic.co/elasticsearch/elasticsearch:7.16.1](https://www.docker.elastic.co/r/elasticsearch/elasticsearch:7.16.1))
+* kibana ([docker.elastic.co/kibana/kibana:7.16.1](https://www.docker.elastic.co/r/kibana/kibana?limit=50&offset=0&show_snapshots=false))
   * gatekeeper sidecar ([quay.io/keycloak/keycloak-gatekeeper:10.0.0](https://quay.io/repository/keycloak/keycloak-gatekeeper))
 * fluentd ([fluent/fluentd-kubernetes-daemonset:v1.4.2-debian-elasticsearch-1.1](https://hub.docker.com/layers/fluent/fluentd-kubernetes-daemonset/v1.4.2-debian-elasticsearch-1.1/images/sha256-ce4885865850d3940f5e5318066897b8502c0b955066392de7fd4ef6f1fd4275?context=explore))
 * busybox ([busybox:1.32.0](https://hub.docker.com/layers/busybox/library/busybox/1.32.0/images/sha256-414aeb860595d7078cbe87abaeed05157d6b44907fbd7db30e1cfba9b6902448?context=explore))
+
+## Log4j 보안 취약점 조치 사항
+* 목적: Log4j 2.11.1 버전을 사용하는 Elasticsearch에 대하여 [CVE-2021-44228](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228), [CVE-2021-45046](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-45046)에 해당하는 취약점을 보완
+* 조치 내용:
+	* Elasticsearch: 7.2.0에서 7.16.1 버전으로 upgrade 적용
+		* [7.16.1](https://www.elastic.co/guide/en/elasticsearch/reference/current/release-notes-7.16.1.html): Disable JNDI lookups via the log4j2.formatMsgNoLookups system property 및 log4j jar to remove the JndiLookup class from the classpath 패치 적용
+	* Kibana: Elasticsearch와의 호환성을 위해 7.2.0에서 7.16.1 버전으로 upgrade 적용
 
 ## Prerequisites
 * 필수 모듈
@@ -26,8 +33,8 @@
     $ mkdir -p ~/efk-install
     $ export EFK_HOME=~/efk-install
     $ cd $EFK_HOME
-    $ export ES_VERSION=7.2.0
-    $ export KIBANA_VERSION=7.2.0
+    $ export ES_VERSION=7.16.1
+    $ export KIBANA_VERSION=7.16.1
     $ export GATEKEEPER_VERSION=10.0.0
     $ export FLUENTD_VERSION=v1.4.2-debian-elasticsearch-1.1
     $ export BUSYBOX_VERSION=1.32.0
@@ -74,10 +81,10 @@
 	* 환경에 맞는 config 내용 작성
 		* ES_VERSION
 			* ElasticSearch 의 버전
-			* ex) 7.2.0
+			* ex) 7.16.1
 		* KIBANA_VERSION
 			* Kibana 의 버전
-			* ex) 7.2.0
+			* ex) 7.16.1
 		* GATEKEEPER_VERSION
 			* Gatekeeper 의 버전
 			* ex) 10.0.0
@@ -141,8 +148,8 @@
 2. 변수 export
     * 다운 받을 버전을 export한다. 
     ```bash
-    $ export ES_VERSION=7.2.0
-    $ export KIBANA_VERSION=7.2.0
+    $ export ES_VERSION=7.16.1
+    $ export KIBANA_VERSION=7.16.1
     $ export GATEKEEPER_VERSION=10.0.0
     $ export FLUENTD_VERSION=v1.4.2-debian-elasticsearch-1.1
     $ export BUSYBOX_VERSION=1.32.0
@@ -215,7 +222,7 @@
     * Hyperauth 에서 Kibana 를 사용하고자 하는 사용자의 계정에 kibana-manager role 을 할당한다.
     * 해당 Hyperauth 사용자 계정으로 로그인해서 정상 작동을 확인한다.
     * $CUSTOM_DOMAIN_NAME 은 kubectl get ingress -n kube-logging | grep kibana를 통해 조회 가능
-![image](figure/reg-role.PNG)
+![image](figure/reg-role.png)
 ![image](figure/kibana-ui.png)   
 
 ## Step 3. Fluentd 설치
@@ -236,15 +243,15 @@
     * 설치 시, default로 생성되는 watch-history-ilm-policy를 적용시키게 되어있다.
     * watch-history-ilm-policy는 생성된 지 7일이 지난 인덱스는 자동으로 삭제한다.
     * policy를 수정하고 싶다면, kibana에서 아래와 같이 Index Lifecycle Policies 메뉴를 들어가서 watch-history-ilm-policy를 클릭한다.
-    ![image](figure/ILM-menu.PNG)
+    ![image](figure/ILM-menu.png)
     * 해당 페이지에서 policy를 커스터마이징 후, Save policy를 클릭한다.
-    ![image](figure/ILM-settings.PNG)
+    ![image](figure/ILM-settings.png)
 
 
 * ElasticSearch에 HTTP 콜 하는 방법
-    * ElasticSearch UI 좌측에 스패너 모양을 클릭한다.
+    * Management 메뉴의 Dev tools 클릭
     * HTTP 콜 작성 후 ▶ 버튼 클릭
-        ![image](figure/call-tab.PNG)
+        ![image](figure/call-tab.png)
 
 * 에러 해결법
     * Limit of total fields [1000] in index 에러
@@ -260,7 +267,7 @@
         * 원인 : 디스크 사용량이 flood-stage watermark 수치를 넘어서면 ES가 자동적으로 저장을 막음 (default 값은 95%)
         * 해결 (택1)
             * 필요없는 인덱스를 삭제해서 용량 확보
-            ![image](figure/delete-index.PNG)
+            ![image](figure/delete-index.png)
             * HTTP콜을 통해 read-only 해제하기
             ```
             PUT /{index 이름}/_settings
