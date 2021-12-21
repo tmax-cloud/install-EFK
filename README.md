@@ -9,9 +9,10 @@
 
 ## Log4j 보안 취약점 조치 사항
 * 목적: Log4j 2.11.1 버전을 사용하는 Elasticsearch에 대하여 [CVE-2021-44228](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228), [CVE-2021-45046](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-45046)에 해당하는 취약점을 보완
+	* Log4j 2.16 버전 [CVE-2021-45105](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-45105) 취약점으로 인하여 log4j 2.17 버전으로 upgrade 필요
 * 조치 내용:
-	* Elasticsearch: 7.2.0에서 7.16.1 버전으로 upgrade 적용
-		* [7.16.1](https://www.elastic.co/guide/en/elasticsearch/reference/current/release-notes-7.16.1.html): Disable JNDI lookups via the log4j2.formatMsgNoLookups system property 및 log4j jar to remove the JndiLookup class from the classpath 패치 적용
+	* Elasticsearch: 7.2.0에서 7.16.2 버전으로 upgrade 적용
+		* [7.16.2](https://www.elastic.co/guide/en/elasticsearch/reference/current/release-notes-7.16.2.html): 7.16.1 버전의 Disable JNDI lookups via the log4j2.formatMsgNoLookups system property 및 log4j jar to remove the JndiLookup class from the classpath 패치에 추가로 log4j 2.17버전 upgrade 적용
 	* Kibana: Elasticsearch와의 호환성을 위해 7.2.0에서 7.16.1 버전으로 upgrade 적용
 
 ## Prerequisites
