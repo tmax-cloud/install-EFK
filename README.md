@@ -2,7 +2,7 @@
 # EFK 설치 가이드
 
 ## 구성 요소 및 버전
-* elasticsearch ([docker.elastic.co/elasticsearch/elasticsearch:7.16.1](https://www.docker.elastic.co/r/elasticsearch/elasticsearch:7.16.1))
+* elasticsearch ([docker.elastic.co/elasticsearch/elasticsearch:7.16.2](https://www.docker.elastic.co/r/elasticsearch/elasticsearch:7.16.2))
 * kibana ([docker.elastic.co/kibana/kibana:7.16.1](https://www.docker.elastic.co/r/kibana/kibana?limit=50&offset=0&show_snapshots=false))
 * fluentd ([fluent/fluentd-kubernetes-daemonset:v1.4.2-debian-elasticsearch-1.1](https://hub.docker.com/layers/fluent/fluentd-kubernetes-daemonset/v1.4.2-debian-elasticsearch-1.1/images/sha256-ce4885865850d3940f5e5318066897b8502c0b955066392de7fd4ef6f1fd4275?context=explore))
 * busybox ([busybox:1.32.0](https://hub.docker.com/layers/busybox/library/busybox/1.32.0/images/sha256-414aeb860595d7078cbe87abaeed05157d6b44907fbd7db30e1cfba9b6902448?context=explore))
@@ -28,7 +28,7 @@
 	* 환경에 맞는 config 내용 작성
 		* ES_VERSION
 			* ElasticSearch의 버전
-			* ex) 7.16.1
+			* ex) 7.16.2
 		* KIBANA_VERSION
 			* KIBANA_VERSION의 버전
 			* ex) 7.16.1
@@ -75,7 +75,7 @@
 2. 버전 export
     * 다운 받을 버전을 export한다. 
     ```bash
-    $ export ES_VERSION=7.16.1
+    $ export ES_VERSION=7.16.2
     $ export KIBANA_VERSION=7.16.1
     $ export FLUENTD_VERSION=v1.4.2-debian-elasticsearch-1.1
     $ export BUSYBOX_VERSION=1.32.0
