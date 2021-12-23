@@ -1,5 +1,5 @@
 1. hypercloud-root-ca.crt를 이용한 인증서, 키 생성
-  a. elasticsearch의 인증서, 키
+  a-1. elasticsearch 의 인증서, 키
     - 노드끼리의 통신
       : $ ./generateTls.sh -name=esnode -dns=opendistro-els.kube-logging.svc -dns=opendistro-els.kube-logging.svc.cluster.local
     - 단일 노드를 위한 것
@@ -14,9 +14,13 @@
       : $ openssl pkcs8 -topk8 -inform PEM -in opendistro-els-0-key.pem -out opendistro-els-0-key-8.pem -nocrypt
     - 최종적으로 쓰는 파일 딱 4개
       : esnode.pem / esnode-key.pem / opendistro-els-0.pem / opendistro-els-0-key-8.pem
-  b. kibana의 인증서, 키
+  a-2. elasticsearch 의 Certificate 객체 생성 (cert-manager 환경)
+    - $ k apply -f 01_es-cert.yaml
+  b-1. kibana 의 인증서, 키
     - 인증서, 키 생성
       : ./generateTls.sh -name=tls -dns=opendistro-kibana.kube-logging.svc -dns=opendistro-kibana.kube-logging.svc.cluster.local
+  b-2. kibana 의 Certificate 객체 생성 (cert-manager 환경)
+    - $ k apply -f 02_kibana-cert.yaml
 
 2. keycloak 설정
   a. tmax realm으로 접속
@@ -26,12 +30,12 @@
     - 테스트 해보니 public도 됨
 
 3. apply
-  a. $ k apply -f config.yml
-  b. $ k apply -f 01_opendistro-es.yaml
-  c. $ k apply -f 02_opendistro-kibana.yaml
+  a. $ k apply -f 03_es-config.yaml
+  b. $ k apply -f 04_opendistro-es.yaml
+  c. $ k apply -f 05_opendistro-kibana.yaml
 
 4. 접속
-  a. https://{kibanaIP:PORT}/api/kibana
+  a. https://{kibanaIP:PORT}/
 
 5. Fluentd 연동
   a. <match fluent.**> 

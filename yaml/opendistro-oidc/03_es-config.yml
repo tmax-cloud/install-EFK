@@ -1,8 +1,49 @@
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: elasticsearch-config
+  namespace: kube-logging
+data:
+  elasticsearch.yml: |
+    network.host: 0.0.0.0
+
+    ## A
+    opendistro_security.ssl.transport.pemcert_filepath: stack-certs/tls.crt
+    opendistro_security.ssl.transport.pemkey_filepath: stack-certs/tls.key
+    opendistro_security.ssl.transport.pemtrustedcas_filepath: stack-certs/ca.crt
+
+    ## B
+    opendistro_security.ssl.http.enabled: false
+    #opendistro_security.ssl.http.pemcert_filepath: certs/esnode.pem
+    #opendistro_security.ssl.http.pemkey_filepath: certs/esnode-key.pem
+    #opendistro_security.ssl.http.pemtrustedcas_filepath: root-ca.pem
+    #opendistro_security.allow_default_init_securityindex: true
+    #opendistro_security.ssl.transport.enforce_hostname_verification: false
+
+    ## C
+    opendistro_security.nodes_dn:
+      - CN=tmaxcloud #,O=Org,L=San Francisco,ST=CA,C=KR
+
+    ## D
+    #opendistro_security.authcz.admin_dn:
+    #  - CN=opendistro-els,O=Org,L=San Francisco,ST=CA,C=KR
+
+    opendistro_security.audit.type: internal_elasticsearch
+    opendistro_security.enable_snapshot_restore_privilege: true
+    opendistro_security.check_snapshot_restore_write_privileges: true
+    opendistro_security.restapi.roles_enabled: ["all_access", "security_rest_api_access"]
+    opendistro_security.protected_indices.enabled: true
+    opendistro_security.protected_indices.indices: [".opendistro-alerting-config", ".opendistro-alerting-alert*", ".opendistro-anomaly-results*", ".opendistro-anomaly-detector*", ".opendistro-anomaly-checkpoints", ".opendistro-anomaly-detection-state", ".opendistro-reports-*", ".opendistro-notifications-*", ".opendistro-notebooks", ".opendistro-asynchronous-search-response*"]
+    cluster.routing.allocation.disk.threshold_enabled: false
+    node.max_local_storage_nodes: 3
+
+---
+
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: opendistro-config
+  name: security-config
   namespace: kube-logging
 data:
   config.yml: |
@@ -65,7 +106,7 @@ data:
       config_version: 2
 
     config:
-      #pemtrustedcas_filepath: /usr/share/elasticsearch/config/hypercloud-root-ca.pem
+      #pemtrustedcas_filepath: /usr/share/elasticsearch/config/root-ca.pem
       dynamic:
         # Set filtered_alias_mode to 'disallow' to forbid more than 2 filtered aliases per index
         # Set filtered_alias_mode to 'warn' to allow more than 2 filtered aliases per index but warns about it (default)
