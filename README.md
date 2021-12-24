@@ -218,7 +218,7 @@
 
 
 * ElasticSearch에 HTTP 콜 하는 방법
-    * Management 메뉴의 Dev tools를 클릭
+    * ElasticSearch UI 좌측에 스패너 모양을 클릭한다.
     * HTTP 콜 작성 후 ▶ 버튼 클릭
         ![image](figure/call-tab.png)
 
