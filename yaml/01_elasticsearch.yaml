@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
       - name: elasticsearch
-        image: docker.elastic.co/elasticsearch/elasticsearch:{ES_VERSION}
+        image: docker.io/tmaxcloudck/elasticsearch:{ES_version}
         securityContext:
           allowPrivilegeEscalation: true
           privileged: true
