@@ -179,7 +179,7 @@
 	```     
 * 비고 :
     * StorageClass 이름이 csi-cephfs-sc가 아니라면 환경에 맞게 수정해야 한다.
-    * Elasticsearch 7.16.1 version에서 downgrade 적용 시 error: cannot downgrade a node from version [7.16.1] to [7.2.0] 발생 시
+    * Elasticsearch 7.16.1 version에서 downgrade 적용 시 error: cannot downgrade a node from version [7.16.1] to [7.2.0] 대응
     	* 기존 elasticsearch cluster의 persistentVolumeClaim 삭제
     	* ex) kubectl delete pvc data-es-cluster-0 -n kube-logging
 
