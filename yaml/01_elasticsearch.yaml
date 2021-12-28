@@ -1,3 +1,9 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: efk-service-account
+  namespace: kube-logging
+---
 kind: Service
 apiVersion: v1
 metadata:
@@ -31,6 +37,7 @@ spec:
       labels:
         app: elasticsearch
     spec:
+      serviceAccount: efk-service-account
       containers:
       - name: elasticsearch
         image: docker.io/tmaxcloudck/elasticsearch:{ES_VERSION}
@@ -66,9 +73,7 @@ spec:
           - name: cluster.initial_master_nodes
             value: "es-cluster-0" #"es-cluster-0,es-cluster-1,es-cluster-2"
           - name: ES_JAVA_OPTS
-            value: "-Xms2g -Xmx2g -Dlog4j2.formatMsgNoLookups=true"
-          - name: LOG4J_FORMAT_MSG_NO_LOOKSUP
-            value: "true"
+            value: "-Xms2g -Xmx2g"
       initContainers:
       - name: fix-permissions
         image: busybox:{BUSYBOX_VERSION}
