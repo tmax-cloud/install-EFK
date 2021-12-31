@@ -2,18 +2,17 @@
 # EFK 설치 가이드
 
 ## 구성 요소 및 버전
-* elasticsearch ([docker.elastic.co/elasticsearch/elasticsearch:7.16.2](https://www.docker.elastic.co/r/elasticsearch/elasticsearch:7.16.2))
-* kibana ([docker.elastic.co/kibana/kibana:7.16.1](https://www.docker.elastic.co/r/kibana/kibana?limit=50&offset=0&show_snapshots=false))
+* elasticsearch ([docker.elastic.co/elasticsearch/elasticsearch:7.2.0](https://www.docker.elastic.co/r/elasticsearch/elasticsearch:7.2.0))
+* kibana ([docker.elastic.co/kibana/kibana:7.2.0](https://www.docker.elastic.co/r/kibana/kibana?limit=50&offset=0&show_snapshots=false))
 * fluentd ([fluent/fluentd-kubernetes-daemonset:v1.4.2-debian-elasticsearch-1.1](https://hub.docker.com/layers/fluent/fluentd-kubernetes-daemonset/v1.4.2-debian-elasticsearch-1.1/images/sha256-ce4885865850d3940f5e5318066897b8502c0b955066392de7fd4ef6f1fd4275?context=explore))
 * busybox ([busybox:1.32.0](https://hub.docker.com/layers/busybox/library/busybox/1.32.0/images/sha256-414aeb860595d7078cbe87abaeed05157d6b44907fbd7db30e1cfba9b6902448?context=explore))
 
 ## Log4j 보안 취약점 조치 사항
-* 목적: Log4j 2.11.1 버전을 사용하는 Elasticsearch에 대하여 [CVE-2021-44228](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228), [CVE-2021-45046](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-45046)에 해당하는 취약점을 보완
-	* Log4j 2.16 버전 [CVE-2021-45105](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-45105) 취약점으로 인하여 log4j 2.17 버전으로 upgrade 필요
+* 목적: Log4j 2.11.1 버전을 사용하는 Elasticsearch에 대하여 [CVE-2021-44228](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228), [CVE-2021-45046](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-45046), [CVE-2021-45105](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-45105)에 해당하는 취약점을 보완
+	* [CVE-2021-44832](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44832) 취약점으로 인하여 log4j 2.17.1 버전으로 upgrade 필요
 * 조치 내용:
-	* Elasticsearch: 7.2.0에서 7.16.2 버전으로 upgrade 적용
-		* [7.16.2](https://www.elastic.co/guide/en/elasticsearch/reference/current/release-notes-7.16.2.html): 7.16.1 버전의 Disable JNDI lookups via the log4j2.formatMsgNoLookups system property 및 log4j jar to remove the JndiLookup class from the classpath 패치에 추가로 log4j 2.17버전 upgrade 적용
-	* Kibana: Elasticsearch와의 호환성을 위해 7.2.0에서 7.16.1 버전으로 upgrade 적용
+	* Elasticsearch: 7.2.0에서 log4j 2.17.1 버전으로 교체한 이미지 빌드 후 적용 [tmaxcloudck/elasticsearch:7.2.1](https://hub.docker.com/r/tmaxcloudck/elasticsearch/tags)
+	* Kibana: Elasticsearch 7.2.0 호환을 위해 7.2.0 버전 적용
 
 ## Prerequisites
 * 필수 모듈
@@ -28,10 +27,10 @@
 	* 환경에 맞는 config 내용 작성
 		* ES_VERSION
 			* ElasticSearch의 버전
-			* ex) 7.16.2
+			* ex) 7.2.1
 		* KIBANA_VERSION
 			* KIBANA_VERSION의 버전
-			* ex) 7.16.1
+			* ex) 7.2.0
 		* FLUENTD_VERSION
 			* FLUENTD_VERSION의 버전
 			* ex) v1.4.2-debian-elasticsearch-1.1
@@ -75,8 +74,8 @@
 2. 버전 export
     * 다운 받을 버전을 export한다. 
     ```bash
-    $ export ES_VERSION=7.16.2
-    $ export KIBANA_VERSION=7.16.1
+    $ export ES_VERSION=7.2.1
+    $ export KIBANA_VERSION=7.2.0
     $ export FLUENTD_VERSION=v1.4.2-debian-elasticsearch-1.1
     $ export BUSYBOX_VERSION=1.32.0
     $ export STORAGECLASS_NAME=csi-cephfs-sc
@@ -99,8 +98,8 @@
     ```
     * 외부 네트워크 통신이 가능한 환경에서 필요한 이미지를 다운받는다.
     ```bash
-    $ sudo docker pull docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION}
-    $ sudo docker save docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION} > elasticsearch_${ES_VERSION}.tar
+    $ sudo docker pull docker.io/tmaxcloudck/elasticsearch:${ES_VERSION}
+    $ sudo docker save docker.io/tmaxcloudck/elasticsearch:${ES_VERSION} > elasticsearch_${ES_VERSION}.tar
     $ sudo docker pull docker.elastic.co/kibana/kibana:${KIBANA_VERSION}
     $ sudo docker save docker.elastic.co/kibana/kibana:${KIBANA_VERSION} > kibana_${KIBANA_VERSION}.tar
     $ sudo docker pull fluent/fluentd-kubernetes-daemonset:${FLUENTD_VERSION}
@@ -120,12 +119,12 @@
     $ sudo docker load < fluentd_${FLUENTD_VERSION}.tar
     $ sudo docker load < busybox_${BUSYBOX_VERSION}.tar
     
-    $ sudo docker tag docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION} ${REGISTRY}/elasticsearch/elasticsearch:${ES_VERSION}
+    $ sudo docker tag docker.io/tmaxcloudck/elasticsearch:${ES_VERSION} ${REGISTRY}/tmaxcloudck/elasticsearch:${ES_VERSION}
     $ sudo docker tag docker.elastic.co/kibana/kibana:${KIBANA_VERSION} ${REGISTRY}/kibana/kibana:${KIBANA_VERSION}
     $ sudo docker tag fluent/fluentd-kubernetes-daemonset:${FLUENTD_VERSION} ${REGISTRY}/fluentd-kubernetes-daemonset:${FLUENTD_VERSION}
     $ sudo docker tag busybox:${BUSYBOX_VERSION} ${REGISTRY}/busybox:${BUSYBOX_VERSION}
     
-    $ sudo docker push ${REGISTRY}/elasticsearch/elasticsearch:${ES_VERSION}
+    $ sudo docker push ${REGISTRY}/tmaxcloudck/elasticsearch:${ES_VERSION}
     $ sudo docker push ${REGISTRY}/kibana/kibana:${KIBANA_VERSION}
     $ sudo docker push ${REGISTRY}/fluentd-kubernetes-daemonset:${FLUENTD_VERSION}
     $ sudo docker push ${REGISTRY}/busybox:${BUSYBOX_VERSION}
@@ -152,7 +151,7 @@
 * 비고 :
     * `폐쇄망에서 설치를 진행하여 별도의 image registry를 사용하는 경우 registry 정보를 추가로 설정해준다.`
 	```bash
-	$ sed -i 's/docker.elastic.co\/elasticsearch\/elasticsearch/'${REGISTRY}'\/elasticsearch\/elasticsearch/g' 01_elasticsearch.yaml
+	$ sed -i 's/docker.io\/tmaxcloudck\/elasticsearch/'${REGISTRY}'\/tmaxcloudck\/elasticsearch/g' 01_elasticsearch.yaml
 	$ sed -i 's/docker.elastic.co\/kibana\/kibana/'${REGISTRY}'\/kibana\/kibana/g' 02_kibana.yaml
 	$ sed -i 's/fluent\/fluentd-kubernetes-daemonset/'${REGISTRY}'\/fluentd-kubernetes-daemonset/g' 03_fluentd.yaml
     $ sed -i 's/fluent\/fluentd-kubernetes-daemonset/'${REGISTRY}'\/fluentd-kubernetes-daemonset/g' 03_fluentd_cri-o.yaml
@@ -167,6 +166,9 @@
 	```     
 * 비고 :
     * StorageClass 이름이 csi-cephfs-sc가 아니라면 환경에 맞게 수정해야 한다.
+    * Elasticsearch 7.16.1 version에서 downgrade 적용 시 error: cannot downgrade a node from version [7.16.1] to [7.2.0] 대응
+    	* 기존 elasticsearch cluster의 persistentVolumeClaim 삭제 후 yaml 재실행
+    	* ex) kubectl delete pvc data-es-cluster-0 -n kube-logging
 
 ## Step 2. kibana 설치
 * 목적 : `EFK의 UI 모듈인 kibana를 설치`
