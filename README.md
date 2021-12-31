@@ -9,10 +9,10 @@
 * busybox ([busybox:1.32.0](https://hub.docker.com/layers/busybox/library/busybox/1.32.0/images/sha256-414aeb860595d7078cbe87abaeed05157d6b44907fbd7db30e1cfba9b6902448?context=explore))
 
 ## Log4j 보안 취약점 조치 사항
-* 목적: Log4j 2.11.1 버전을 사용하는 Elasticsearch에 대하여 [CVE-2021-44228](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228), [CVE-2021-45046](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-45046)에 해당하는 취약점을 보완
-	* Log4j 2.16 버전 [CVE-2021-45105](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-45105) 취약점으로 인하여 log4j 2.17 버전으로 upgrade 필요
+* 목적: Log4j 2.11.1 버전을 사용하는 Elasticsearch에 대하여 [CVE-2021-44228](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228), [CVE-2021-45046](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-45046), [CVE-2021-45105](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-45105)에 해당하는 취약점을 보완
+	* [CVE-2021-44832](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44832) 취약점으로 인하여 log4j 2.17.1 버전으로 upgrade 필요
 * 조치 내용:
-	* Elasticsearch: 7.2.0에서 log4j 2.17 버전으로 교체한 이미지 빌드 후 적용 [tmaxcloudck/elasticsearch:7.2.0](https://hub.docker.com/r/tmaxcloudck/elasticsearch/tags)
+	* Elasticsearch: 7.2.0에서 log4j 2.17.1 버전으로 교체한 이미지 빌드 후 적용 [tmaxcloudck/elasticsearch:7.2.1](https://hub.docker.com/r/tmaxcloudck/elasticsearch/tags)
 	* Kibana: Elasticsearch 7.2.0 호환을 위해 7.2.0 버전 적용
 
 ## Prerequisites
@@ -33,7 +33,7 @@
     $ mkdir -p ~/efk-install
     $ export EFK_HOME=~/efk-install
     $ cd $EFK_HOME
-    $ export ES_VERSION=7.2.0
+    $ export ES_VERSION=7.2.1
     $ export KIBANA_VERSION=7.2.0
     $ export GATEKEEPER_VERSION=10.0.0
     $ export FLUENTD_VERSION=v1.4.2-debian-elasticsearch-1.1
@@ -81,7 +81,7 @@
 	* 환경에 맞는 config 내용 작성
 		* ES_VERSION
 			* ElasticSearch 의 버전
-			* ex) 7.2.0
+			* ex) 7.2.1
 		* KIBANA_VERSION
 			* Kibana 의 버전
 			* ex) 7.2.0
@@ -148,7 +148,7 @@
 2. 변수 export
     * 다운 받을 버전을 export한다. 
     ```bash
-    $ export ES_VERSION=7.2.0
+    $ export ES_VERSION=7.2.1
     $ export KIBANA_VERSION=7.2.0
     $ export GATEKEEPER_VERSION=10.0.0
     $ export FLUENTD_VERSION=v1.4.2-debian-elasticsearch-1.1
