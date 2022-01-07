@@ -13,7 +13,7 @@
 * 조치 내용:
 	* Elasticsearch: 7.2.0에서 log4j 2.17.1 버전으로 교체한 이미지 빌드 후 적용 [tmaxcloudck/elasticsearch:7.2.1](https://hub.docker.com/r/tmaxcloudck/elasticsearch/tags)
 	* Kibana: Elasticsearch 7.2.0 호환을 위해 7.2.0 버전 적용
-
+  
 ## Prerequisites
 * 필수 모듈
   * [RookCeph](https://github.com/tmax-cloud/install-rookceph)
@@ -166,7 +166,7 @@
 	```     
 * 비고 :
     * StorageClass 이름이 csi-cephfs-sc가 아니라면 환경에 맞게 수정해야 한다.
-    * Elasticsearch 7.16.1 version에서 downgrade 적용 시 error: cannot downgrade a node from version [7.16.1] to [7.2.0] 대응
+    * Elasticsearch 7.16.1 version에서 downgrade 적용 시 error: cannot downgrade a node from version [7.16.1] to [7.2.1] 대응
     	* 기존 elasticsearch cluster의 persistentVolumeClaim 삭제 후 yaml 재실행
     	* ex) kubectl delete pvc data-es-cluster-0 -n kube-logging
 
