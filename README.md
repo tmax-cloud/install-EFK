@@ -8,11 +8,12 @@
 * busybox ([busybox:1.32.0](https://hub.docker.com/layers/busybox/library/busybox/1.32.0/images/sha256-414aeb860595d7078cbe87abaeed05157d6b44907fbd7db30e1cfba9b6902448?context=explore))
 
 ## Log4j 보안 취약점 조치 사항
-* 목적: Log4j 2.11.1 버전을 사용하는 Elasticsearch에 대하여 [CVE-2021-44228](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228), [CVE-2021-45046](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-45046)에 해당하는 취약점을 보완
-	* Log4j 2.16 버전 [CVE-2021-45105](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-45105) 취약점으로 인하여 log4j 2.17 버전으로 upgrade 필요
+* 목적: Log4j 2.11.1 버전을 사용하는 Elasticsearch에 대하여 [CVE-2021-44228](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228), [CVE-2021-45046](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-45046), [CVE-2021-45105](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-45105)에 해당하는 취약점을 보완
+	* [CVE-2021-44832](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44832) 취약점으로 인하여 log4j 2.17.1 버전으로 upgrade 필요
 * 조치 내용:
-	* Elasticsearch: 7.2.0에서 log4j 2.17 버전으로 교체한 이미지 빌드 후 적용 [tmaxcloudck/elasticsearch:7.2.0](https://hub.docker.com/r/tmaxcloudck/elasticsearch/tags)
+	* Elasticsearch: 7.2.0에서 log4j 2.17.1 버전으로 교체한 이미지 빌드 후 적용 [tmaxcloudck/elasticsearch:7.2.1](https://hub.docker.com/r/tmaxcloudck/elasticsearch/tags)
 	* Kibana: Elasticsearch 7.2.0 호환을 위해 7.2.0 버전 적용
+  
 ## Prerequisites
 * 필수 모듈
   * [RookCeph](https://github.com/tmax-cloud/install-rookceph)
@@ -26,7 +27,7 @@
 	* 환경에 맞는 config 내용 작성
 		* ES_VERSION
 			* ElasticSearch의 버전
-			* ex) 7.2.0
+			* ex) 7.2.1
 		* KIBANA_VERSION
 			* KIBANA_VERSION의 버전
 			* ex) 7.2.0
@@ -73,7 +74,7 @@
 2. 버전 export
     * 다운 받을 버전을 export한다. 
     ```bash
-    $ export ES_VERSION=7.2.0
+    $ export ES_VERSION=7.2.1
     $ export KIBANA_VERSION=7.2.0
     $ export FLUENTD_VERSION=v1.4.2-debian-elasticsearch-1.1
     $ export BUSYBOX_VERSION=1.32.0
@@ -123,7 +124,7 @@
     $ sudo docker tag fluent/fluentd-kubernetes-daemonset:${FLUENTD_VERSION} ${REGISTRY}/fluentd-kubernetes-daemonset:${FLUENTD_VERSION}
     $ sudo docker tag busybox:${BUSYBOX_VERSION} ${REGISTRY}/busybox:${BUSYBOX_VERSION}
     
-    $ sudo docker push ${REGISTRY}/elasticsearch/elasticsearch:${ES_VERSION}
+    $ sudo docker push ${REGISTRY}/tmaxcloudck/elasticsearch:${ES_VERSION}
     $ sudo docker push ${REGISTRY}/kibana/kibana:${KIBANA_VERSION}
     $ sudo docker push ${REGISTRY}/fluentd-kubernetes-daemonset:${FLUENTD_VERSION}
     $ sudo docker push ${REGISTRY}/busybox:${BUSYBOX_VERSION}
@@ -165,7 +166,7 @@
 	```     
 * 비고 :
     * StorageClass 이름이 csi-cephfs-sc가 아니라면 환경에 맞게 수정해야 한다.
-    * Elasticsearch 7.16.1 version에서 downgrade 적용 시 error: cannot downgrade a node from version [7.16.1] to [7.2.0] 대응
+    * Elasticsearch 7.16.1 version에서 downgrade 적용 시 error: cannot downgrade a node from version [7.16.1] to [7.2.1] 대응
     	* 기존 elasticsearch cluster의 persistentVolumeClaim 삭제 후 yaml 재실행
     	* ex) kubectl delete pvc data-es-cluster-0 -n kube-logging
 
