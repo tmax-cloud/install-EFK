@@ -92,7 +92,10 @@
     	* Included Client Audience = kibana    
     * Kibana를 사용하고자 하는 사용자의 계정의 Role Mappings 설정에서 kibana-manager Client role을 할당한다.
 
+* Client 생성
 ![image](figure/client.png)
+
+* Mapper 생성
 ![image](figure/mapper.png)
 
 
