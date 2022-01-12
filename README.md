@@ -74,6 +74,27 @@
     $ sudo docker push ${REGISTRY}/fluentd-kubernetes-daemonset:${FLUENTD_VERSION}
     $ sudo docker push ${REGISTRY}/busybox:${BUSYBOX_VERSION}
     ```
+## Hyperauth 연동
+* 목적: `Kibana와 Hyperauth 연동`
+* 순서:
+    *  hyperauth에서 client 생성
+    	* Client protocol = openid-connect
+    	* Access type = confidential 
+    	* Standard Flow Enabled = On 
+    	* Direct Access Grants Enabled = On
+    	* Service Accounts Enabled = On
+    	* Valid Redirect URIs: '*'
+    * Client > kibana > Credentials > client_secret 복사 후 KIBANA_CLIENT_SECRET을 채운다.
+    * Client > kibana > Roles > add role로 'kibana-manager' role 생성
+    * Client > kibana > Mappers > create로 mapper 생성
+    	* Name = kibana
+    	* Mapper Type = Audience
+    	* Included Client Audience = kibana    
+    * Kibana를 사용하고자 하는 사용자의 계정의 Role Mappings 설정에서 kibana-manager Client role을 할당한다.
+
+![image](figure/client.png)
+![image](figure/mapper.png)
+
 
 ## Step 0. efk.config 설정
 * 목적 : `yaml/efk.config 파일에 설치를 위한 정보 기입`
@@ -222,10 +243,8 @@
     ```
 * 비고 :
     * Kibana pod 가 running 임을 확인한 뒤 https://kibana.${CUSTOM_DOMAIN_NAME}/ 에 접속한다.
-    * Hyperauth 에서 Kibana 를 사용하고자 하는 사용자의 계정에 kibana-manager role 을 할당한다.
-    * 해당 Hyperauth 사용자 계정으로 로그인해서 정상 작동을 확인한다.
+    * Kibana-manager role을 할당한 Hyperauth 사용자 계정으로 로그인해서 정상 작동을 확인한다.
     * $CUSTOM_DOMAIN_NAME 은 kubectl get ingress -n kube-logging | grep kibana를 통해 조회 가능
-![image](figure/reg-role.png)
 ![image](figure/kibana-ui.png)   
 
 ## Step 3. Fluentd 설치
