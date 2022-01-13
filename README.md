@@ -244,3 +244,9 @@
                 "index.blocks.read_only_allow_delete": null
             }
             ```
+## 기타: HyperCloud21 EFK Spec 정보
+Namespace | Pod | Container | Request(CPU) | Request(Memory) | Limit(CPU) | Limit(Memory) 
+--- | --- | --- | --- |--- |--- |--- 
+kube-logging | es-cluster | elasticsearch | 500m | 8000Mi | 1000m | 16000Mi  
+kube-logging | kibana | kibana | 500m | 1000m | 500m | 1000m 
+kube-logging | fluentd | fluentd | 300m | 1000m | 500m | 1000m  
