@@ -46,11 +46,11 @@ spec:
           privileged: true
         resources:
             limits:
-              cpu: 500m
-              memory: 3000Mi
+              cpu: 1000m
+              memory: 16000Mi
             requests:
-              cpu: 100m
-              memory: 100Mi
+              cpu: 500m
+              memory: 8000Mi
         ports:
         - containerPort: 9200
           name: rest
@@ -73,7 +73,7 @@ spec:
           - name: cluster.initial_master_nodes
             value: "es-cluster-0"
           - name: ES_JAVA_OPTS
-            value: "-Xms2g -Xmx2g"
+            value: "-Xms8g -Xmx8g"
       initContainers:
       - name: fix-permissions
         image: busybox:{BUSYBOX_VERSION}
