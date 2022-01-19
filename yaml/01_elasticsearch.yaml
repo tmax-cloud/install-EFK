@@ -49,8 +49,8 @@ spec:
               cpu: 1000m
               memory: 16000Mi
             requests:
-              cpu: 500m
-              memory: 8000Mi
+              cpu: 100m
+              memory: 100Mi
         ports:
         - containerPort: 9200
           name: rest
