@@ -6,7 +6,7 @@
 * kibana ([docker.elastic.co/kibana/kibana:7.2.0](https://www.docker.elastic.co/r/kibana/kibana?limit=50&offset=0&show_snapshots=false))
   * gatekeeper sidecar ([quay.io/keycloak/keycloak-gatekeeper:10.0.0](https://quay.io/repository/keycloak/keycloak-gatekeeper))
 * fluentd ([fluent/fluentd-kubernetes-daemonset:v1.4.2-debian-elasticsearch-1.1](https://hub.docker.com/layers/fluent/fluentd-kubernetes-daemonset/v1.4.2-debian-elasticsearch-1.1/images/sha256-ce4885865850d3940f5e5318066897b8502c0b955066392de7fd4ef6f1fd4275?context=explore))
-  * rollover 적용 시 fluentd [fluent/fluentd-kubernetes-daemonset:v1.14.3-debian-elasticsearch7-1.0](https://hub.docker.com/layers/fluent/fluentd-kubernetes-daemonset/v1.14.3-debian-elasticsearch7-1.0/images/sha256-a7d7bd65c3ff91fa3c27e65163aca1b9d968edb3dd9fa893553e5de6af3afb46?context=explore)로 적용
+  * rollover 적용 시 fluentd 버전을 [fluent/fluentd-kubernetes-daemonset:v1.14.3-debian-elasticsearch7-1.0](https://hub.docker.com/layers/fluent/fluentd-kubernetes-daemonset/v1.14.3-debian-elasticsearch7-1.0/images/sha256-a7d7bd65c3ff91fa3c27e65163aca1b9d968edb3dd9fa893553e5de6af3afb46?context=explore)로 적용
 * busybox ([busybox:1.32.0](https://hub.docker.com/layers/busybox/library/busybox/1.32.0/images/sha256-414aeb860595d7078cbe87abaeed05157d6b44907fbd7db30e1cfba9b6902448?context=explore))
 
 ## Log4j 보안 취약점 조치 사항
