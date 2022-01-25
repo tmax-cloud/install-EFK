@@ -289,7 +289,8 @@
 ![image](figure/rollover-ILM.png)
 * 설정된 ILM이 해당 index에 반영되어 있는지 확인
 * 미반영 시, 해당 index > manage index> remove lifecycle policy 로 ILM 적용을 지운 후 다시 add lifecycle policy로 재적용
-![image](figure/rollover-ILM check.png )
+
+![image](figure/rollover-check.png)
 ![image](figure/add-ILM.png)
 
 * ElasticSearch에 HTTP 콜 하는 방법
