@@ -6,6 +6,7 @@
 * kibana ([docker.elastic.co/kibana/kibana:7.2.0](https://www.docker.elastic.co/r/kibana/kibana?limit=50&offset=0&show_snapshots=false))
   * gatekeeper sidecar ([quay.io/keycloak/keycloak-gatekeeper:10.0.0](https://quay.io/repository/keycloak/keycloak-gatekeeper))
 * fluentd ([fluent/fluentd-kubernetes-daemonset:v1.4.2-debian-elasticsearch-1.1](https://hub.docker.com/layers/fluent/fluentd-kubernetes-daemonset/v1.4.2-debian-elasticsearch-1.1/images/sha256-ce4885865850d3940f5e5318066897b8502c0b955066392de7fd4ef6f1fd4275?context=explore))
+  * rollover 적용 시 fluentd [fluent/fluentd-kubernetes-daemonset:v1.14.3-debian-elasticsearch7-1.0](https://hub.docker.com/layers/fluent/fluentd-kubernetes-daemonset/v1.14.3-debian-elasticsearch7-1.0/images/sha256-a7d7bd65c3ff91fa3c27e65163aca1b9d968edb3dd9fa893553e5de6af3afb46?context=explore)로 적용
 * busybox ([busybox:1.32.0](https://hub.docker.com/layers/busybox/library/busybox/1.32.0/images/sha256-414aeb860595d7078cbe87abaeed05157d6b44907fbd7db30e1cfba9b6902448?context=explore))
 
 ## Log4j 보안 취약점 조치 사항
@@ -36,7 +37,7 @@
     $ export ES_VERSION=7.2.1
     $ export KIBANA_VERSION=7.2.0
     $ export GATEKEEPER_VERSION=10.0.0
-    $ export FLUENTD_VERSION=v1.4.2-debian-elasticsearch-1.1
+    $ export FLUENTD_VERSION=v1.4.2-debian-elasticsearch-1.1 # rollover v1.14.3-debian-elasticsearch7-1.0
     $ export BUSYBOX_VERSION=1.32.0
     $ export REGISTRY={ImageRegistryIP:Port}
     ```
@@ -128,6 +129,7 @@
 		* FLUENTD_VERSION
 			* FLUENTD_VERSION 의 버전
 			* ex) v1.4.2-debian-elasticsearch-1.1
+			* 비고: rollover index 적용 시 v1.14.3-debian-elasticsearch7-1.0 버전으로 적용
 		* BUSYBOX_VERSION
 			* BUSYBOX_VERSION 의 버전
 			* ex) 1.32.0
@@ -175,7 +177,7 @@
     $ export ES_VERSION=7.2.1
     $ export KIBANA_VERSION=7.2.0
     $ export GATEKEEPER_VERSION=10.0.0
-    $ export FLUENTD_VERSION=v1.4.2-debian-elasticsearch-1.1
+    $ export FLUENTD_VERSION=v1.4.2-debian-elasticsearch-1.1 # rollover v1.14.3-debian-elasticsearch7-1.0
     $ export BUSYBOX_VERSION=1.32.0
     $ export STORAGECLASS_NAME=csi-cephfs-sc
     ```
@@ -258,6 +260,12 @@
       ``` bash
       $ kubectl apply -f 03_fluentd_cri-o.yaml
       ```
+  * rollover index 적용 시
+      * [03_fluentd_cri-o_rollover.yaml](yaml/03_fluentd_cri-o_rollover.yaml) 실행
+      ``` bash
+      $ kubectl apply -f 03_fluentd_cri-o_rollover.yaml
+      ```
+
   2. Container Runtime이 docker 인 경우  
     * [03_fluentd.yaml](yaml/03_fluentd.yaml) 실행 
       ```bash
@@ -267,11 +275,22 @@
 * ILM policy 설정
     * 설치 시, default로 생성되는 watch-history-ilm-policy를 적용시키게 되어있다.
     * watch-history-ilm-policy는 생성된 지 7일이 지난 인덱스는 자동으로 삭제한다.
+      * 단, rollover 설정 시 rollover된 지 7일이 지난 인덱스를 자동으로 삭제한다.
     * policy를 수정하고 싶다면, kibana에서 아래와 같이 Index Lifecycle Policies 메뉴를 들어가서 watch-history-ilm-policy를 클릭한다.
     ![image](figure/ILM-menu.png)
     * 해당 페이지에서 policy를 커스터마이징 후, Save policy를 클릭한다.
     ![image](figure/ILM-settings.png)
-
+    
+## ILM policy enable rollover 설정
+* Watch-History-Ilm-Policy > Hot phase > enable rollover 적용. 아래의 3가지 조건 중 하나라도 해당될 경우 rollover를 실행
+    * Maximum Index size : 인덱스가 특정 사이즈(storagesize)에 도달했을 경우 rollover 실행
+    * Maximum documents: 인덱스에 저장된 docs count가 특정 숫자에 도달했을 경우 rollover 실행 
+    * Maximum age: 인덱스가 생성된 시간으로부터 특정 시간이 지난 경우 rollover 실행
+![image](figure/rollover-ILM.png)
+* 설정된 ILM이 해당 index에 반영되어 있는지 확인
+* 미반영 시, 해당 index > manage index> remove lifecycle policy 로 ILM 적용을 지운 후 다시 add lifecycle policy로 재적용
+![image](figure/'rollover-ILM check.png')
+![image](figure/add-ILM.png)
 
 * ElasticSearch에 HTTP 콜 하는 방법
     * ElasticSearch UI 좌측에 스패너 모양을 클릭한다.

@@ -105,7 +105,12 @@ fi
 # 4. Install Fluentd
 echo " "
 echo "---4. Install Fluentd---"
-kubectl apply -f 03_fluentd_cri-o.yaml
+if [ $FLUENTD_VERSION == v1.14.3-debian-elasticsearch7-1.0 ]; then
+  kubectl apply -f 03_fluentd_cri-o_rollover.yaml
+  echo "Fluentd rollover installing"
+else
+  kubectl apply -f 03_fluentd_cri-o.yaml
+fi
 timeout 10m kubectl -n kube-logging rollout status daemonset/fluentd
 suc=`echo $?`
 if [ $suc != 0 ]; then
@@ -113,7 +118,7 @@ if [ $suc != 0 ]; then
   kubectl delete -f 03_fluentd_cri-o.yaml
   exit 1
 else
-  echo "Fluentd running success" 
+  echo "Fluentd running success"
 fi
 
 # 5. Wait until Kibana makes an index and alias normally
