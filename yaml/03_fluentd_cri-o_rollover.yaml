@@ -14,6 +14,9 @@ data:
       @type elasticsearch
       request_timeout 2147483648
       include_tag_key true
+      include_timestamp true
+      suppress_type_name true
+      time_key timestamp
       host "#{ENV['FLUENT_ELASTICSEARCH_HOST']}"
       port "#{ENV['FLUENT_ELASTICSEARCH_PORT']}"
       path "#{ENV['FLUENT_ELASTICSEARCH_PATH']}"
@@ -24,19 +27,23 @@ data:
       reconnect_on_error "#{ENV['FLUENT_ELASTICSEARCH_RECONNECT_ON_ERROR'] || 'true'}"
       reload_on_failure "#{ENV['FLUENT_ELASTICSEARCH_RELOAD_ON_FAILURE'] || 'true'}"
       log_es_400_reason "#{ENV['FLUENT_ELASTICSEARCH_LOG_ES_400_REASON'] || 'false'}"
-      logstash_prefix "#{ENV['FLUENT_ELASTICSEARCH_LOGSTASH_PREFIX'] || 'logstash'}"
-      logstash_format "#{ENV['FLUENT_ELASTICSEARCH_LOGSTASH_FORMAT'] || 'true'}"
+      #logstash_prefix "#{ENV['FLUENT_ELASTICSEARCH_LOGSTASH_PREFIX'] || 'logstash'}"
+      #logstash_format "#{ENV['FLUENT_ELASTICSEARCH_LOGSTASH_FORMAT'] || 'true'}"
       index_name "#{ENV['FLUENT_ELASTICSEARCH_LOGSTASH_INDEX_NAME'] || 'logstash'}"
-      type_name "#{ENV['FLUENT_ELASTICSEARCH_LOGSTASH_TYPE_NAME'] || 'fluentd'}"
+      #type_name "#{ENV['FLUENT_ELASTICSEARCH_LOGSTASH_TYPE_NAME'] || 'fluentd'}"
+      index_date_pattern "now/d"
+      index_seperator "-"
+      deflector_alias logstash
 
-      enable_ilm true
+      #enable_ilm true
       #ilm_policy_id watch-history-ilm-policy
       #ilm_policy_overwrite false
-      #rollover_index true
+      rollover_index true
       #ilm_policy {}
+      template_overwrite true
       template_name delete-after-7days
       template_file /fluentd/etc/index_template.json
-      #customize_template {"<<index_prefix>>": "fluentd"}
+      customize_template {"<<index_prefix>>": "fluentd"}
 
       <buffer>
         @type file
@@ -61,10 +68,14 @@ data:
         @type multi_format
         <pattern>
           format json
+          time_key timestamp
+          keep_time_key true
           time_format %Y-%m-%dT%H:%M:%S.%NZ
         </pattern>
         <pattern>
           format regexp
+          time_key timestamp
+          keep_time_key true
           time_format %Y-%m-%dT%H:%M:%S.%N%:z
           expression /^(?<time>.+)\b(?<stream>stdout|stderr)\b(?<log>.*)$/
         </pattern>
@@ -81,6 +92,8 @@ data:
       read_from_head false
       <parse>
         @type regexp
+        time_key timestamp
+        keep_time_key true
         expression /^(?<time>[^ ]* [^ ,]*)[^\[]*\[[^\]]*\]\[(?<severity>[^ \]]*) *\] (?<message>.*)$/
         time_format %Y-%m-%d %H:%M:%S
       </parse>
@@ -107,6 +120,8 @@ data:
       read_from_head false
       <parse>
         @type regexp
+        time_key timestamp
+        keep_time_key true
         expression /^time="(?<time>[^)]*)" level=(?<severity>[^ ]*) msg="(?<message>[^"]*)"( err="(?<error>[^"]*)")?( statusCode=($<status_code>\d+))?/
       </parse>
     </source>
@@ -240,6 +255,8 @@ data:
       read_from_head false
       <parse>
         @type multiline
+        time_key timestamp
+        keep_time_key true
         format_firstline /^\S+\s+AUDIT:/
         # Fields must be explicitly captured by name to be parsed into the record.
         # Fields may not always be present, and order may change, so this just looks
@@ -266,7 +283,7 @@ data:
         "index": {
           "lifecycle": {
             "name": "watch-history-ilm-policy",
-            "rollover_alias": ""
+            "rollover_alias": "logstash"
           }
         }
       }
@@ -343,6 +360,10 @@ spec:
           - name: FLUENTD_SYSTEMD_CONF
             value: disable
           - name: FLUENT_ELASTICSEARCH_SED_DISABLE
+            value: "true"
+          - name: FLUENT_ELASTICSEARCH_LOGSTASH_FORMAT
+            value: "false"
+          - name: FLUENT_ELASTICSEARCH_INCLUDE_TIMESTAMP
             value: "true"
         resources:
           limits:
