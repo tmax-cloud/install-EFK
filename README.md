@@ -282,7 +282,7 @@
     ![image](figure/ILM-settings.png)
     
 ## ILM policy enable rollover 설정
-* Watch-History-Ilm-Policy > Hot phase > enable rollover 적용. 아래의 3가지 조건 중 하나라도 해당될 경우 rollover를 실행
+* Watch-History-ILM-Policy > Hot phase > enable rollover 적용. 아래의 3가지 조건 중 하나라도 해당될 경우 rollover를 실행
     * Maximum Index size : 인덱스가 특정 사이즈(storagesize)에 도달했을 경우 rollover 실행
     * Maximum documents: 인덱스에 저장된 docs count가 특정 숫자에 도달했을 경우 rollover 실행 
     * Maximum age: 인덱스가 생성된 시간으로부터 특정 시간이 지난 경우 rollover 실행
