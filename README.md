@@ -282,7 +282,7 @@
     ![image](figure/ILM-settings.png)
     
 ## ILM policy enable rollover 설정
-* fluentd_crio_rollover.yaml로 fluentd 설치 시에만 설정 가능
+* 03_fluentd_cri-o_rollover.yaml로 fluentd 설치 시에만 설정 가능
 * Watch-History-ILM-Policy > Hot phase > enable rollover 적용. 아래의 3가지 조건 중 하나라도 해당될 경우 rollover를 실행
     * Maximum Index size : 인덱스가 특정 사이즈(storagesize)에 도달했을 경우 rollover 실행
     * Maximum documents: 인덱스에 저장된 docs count가 특정 숫자에 도달했을 경우 rollover 실행 
