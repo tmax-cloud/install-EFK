@@ -17,6 +17,7 @@ data:
       include_timestamp true
       suppress_type_name true
       time_key timestamp
+      timezone +09:00
       host "#{ENV['FLUENT_ELASTICSEARCH_HOST']}"
       port "#{ENV['FLUENT_ELASTICSEARCH_PORT']}"
       path "#{ENV['FLUENT_ELASTICSEARCH_PATH']}"
@@ -70,12 +71,14 @@ data:
           format json
           time_key timestamp
           keep_time_key true
+          timezone +09:00
           time_format %Y-%m-%dT%H:%M:%S.%NZ
         </pattern>
         <pattern>
           format regexp
           time_key timestamp
           keep_time_key true
+          timezone +09:00
           time_format %Y-%m-%dT%H:%M:%S.%N%:z
           expression /^(?<time>.+)\b(?<stream>stdout|stderr)\b(?<log>.*)$/
         </pattern>
@@ -94,6 +97,7 @@ data:
         @type regexp
         time_key timestamp
         keep_time_key true
+        timezone +09:00
         expression /^(?<time>[^ ]* [^ ,]*)[^\[]*\[[^\]]*\]\[(?<severity>[^ \]]*) *\] (?<message>.*)$/
         time_format %Y-%m-%d %H:%M:%S
       </parse>
@@ -257,6 +261,7 @@ data:
         @type multiline
         time_key timestamp
         keep_time_key true
+        timezone +09:00
         format_firstline /^\S+\s+AUDIT:/
         # Fields must be explicitly captured by name to be parsed into the record.
         # Fields may not always be present, and order may change, so this just looks
