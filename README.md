@@ -274,7 +274,7 @@
     
 ## 비고
 * Fluentd에서 수집하는 로그 필드 설정
-    * fluentd의 filter에서 @type record_transformer를 통해 remove_keys를 적용하여 로그 필드를 삭제할 수 있다.
+    * fluentd configmap의 kubernetes.conf에 filter 설정을 추가로 적용하여 로그 필드를 삭제할 수 있다.
     * 주의: 삭제된 로그 필드는 elasticsearch에 적재되지 않는다.
     * 예시) kubernetes.container_image_id에 대한 로그 필드를 삭제
     ```
