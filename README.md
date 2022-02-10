@@ -264,7 +264,27 @@
       ```bash
       $ kubectl apply -f 03_fluentd.yaml
       ```
+  3. Kubernetes pod 별로 index 생성하고자 할 경우
+    * [03_fluentd_multiple_index.yaml](yaml/03_fluentd_multiple_index.yaml) 실행 
+      ```bash
+      $ kubectl apply -f 03_fluentd_multiple_index.yaml
+      ```
+    * 예시
+    ![image](figure/multiple-index.png)
+    
 ## 비고
+* Fluentd에서 수집하는 로그 필드 설정
+    * fluentd의 filter에서 @type record_transformer를 통해 remove_keys를 적용하여 로그 필드를 삭제할 수 있다.
+    * 주의: 삭제된 로그 필드는 elasticsearch에 적재되지 않는다.
+    * 예시) kubernetes.container_image_id에 대한 로그 필드를 삭제
+    ```
+    <filter kubernetes.**>
+      @type record_transformer
+      enable_ruby true
+      remove_keys $.kubernetes.container_image_id
+    </filter>
+
+    ```
 * ILM policy 설정
     * 설치 시, default로 생성되는 watch-history-ilm-policy를 적용시키게 되어있다.
     * watch-history-ilm-policy는 생성된 지 7일이 지난 인덱스는 자동으로 삭제한다.
