@@ -105,12 +105,7 @@ fi
 # 4. Install Fluentd
 echo " "
 echo "---4. Install Fluentd---"
-if [ $FLUENTD_VERSION == v1.14.3-debian-elasticsearch7-1.0 ]; then
-  kubectl apply -f 03_fluentd_cri-o_rollover.yaml
-  echo "Fluentd rollover installing"
-else
-  kubectl apply -f 03_fluentd_cri-o.yaml
-fi
+kubectl apply -f 03_fluentd_cri-o.yaml
 timeout 10m kubectl -n kube-logging rollout status daemonset/fluentd
 suc=`echo $?`
 if [ $suc != 0 ]; then
