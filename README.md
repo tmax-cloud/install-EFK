@@ -268,7 +268,6 @@
 * ILM policy 설정
     * 설치 시, default로 생성되는 watch-history-ilm-policy를 적용시키게 되어있다.
     * watch-history-ilm-policy는 생성된 지 7일이 지난 인덱스는 자동으로 삭제한다.
-      * 단, rollover 설정 시 rollover된 지 7일이 지난 인덱스를 자동으로 삭제한다.
     * policy를 수정하고 싶다면, kibana에서 아래와 같이 Index Lifecycle Policies 메뉴를 들어가서 watch-history-ilm-policy를 클릭한다.
     ![image](figure/ILM-menu.png)
     * 해당 페이지에서 policy를 커스터마이징 후, Save policy를 클릭한다.
