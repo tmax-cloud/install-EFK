@@ -285,6 +285,7 @@
     </filter>
 
     ```
+    
 * ILM policy 설정
     * 설치 시, default로 생성되는 watch-history-ilm-policy를 적용시키게 되어있다.
     * watch-history-ilm-policy는 생성된 지 7일이 지난 인덱스는 자동으로 삭제한다.
@@ -292,6 +293,27 @@
     ![image](figure/ILM-menu.png)
     * 해당 페이지에서 policy를 커스터마이징 후, Save policy를 클릭한다.
     ![image](figure/ILM-settings.png)
+    
+* ILM policy 적용 Index pattern 추가
+    * fluentd.yaml 파일 Configmap의 index_template.json에서 ilm을 적용하고자 하는 index_pattern을 추가로 설정할 수 있다.
+    * 예시) 'fluentd-*'를 인덱스 패턴으로 추가하려는 경우
+    
+    ```
+    index_template.json: |-
+    {
+      "index_patterns": [
+        "logstash-*", "fluentd-*"  # index-pattern 추가 
+      ],
+      "settings": {
+        "index": {
+          "lifecycle": {
+             "name": "watch-history-ilm-policy"
+          }
+        }
+      }
+    }
+
+    ```
 
 * ElasticSearch에 HTTP 콜 하는 방법
     * ElasticSearch UI 좌측에 스패너 모양을 클릭한다.
