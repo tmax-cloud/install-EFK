@@ -61,6 +61,9 @@ spec:
         volumeMounts:
         - name: data
           mountPath: /usr/share/elasticsearch/data
+        - name: es-config
+          mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
+          subPath: elasticsearch.yml
         env:
           - name: cluster.name
             value: k8s-logs
@@ -93,6 +96,10 @@ spec:
         command: ["sh", "-c", "ulimit -n 65536"]
         securityContext:
           privileged: true
+      volumes:
+      - name: es-config
+        configMap:
+          name: es-config
   volumeClaimTemplates:
   - metadata:
       name: data
@@ -104,3 +111,13 @@ spec:
       resources:
         requests:
           storage: 50Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: es-config
+  namespace: kube-logging
+data:
+  elasticsearch.yml: |
+    xpack.security.enabled: true
+    xpack.security.transport.ssl.enabled: true

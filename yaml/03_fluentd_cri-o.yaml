@@ -16,6 +16,8 @@ data:
       include_tag_key true
       host "#{ENV['FLUENT_ELASTICSEARCH_HOST']}"
       port "#{ENV['FLUENT_ELASTICSEARCH_PORT']}"
+      user "#{ENV['FLUENT_ELASTICSEARCH_USER']}"
+      password "#{ENV['FLUENT_ELASTICSEARCH_PASSWORD']}"
       path "#{ENV['FLUENT_ELASTICSEARCH_PATH']}"
       scheme "#{ENV['FLUENT_ELASTICSEARCH_SCHEME'] || 'http'}"
       ssl_verify "#{ENV['FLUENT_ELASTICSEARCH_SSL_VERIFY'] || 'true'}"
@@ -334,12 +336,16 @@ spec:
       - name: fluentd
         image: fluent/fluentd-kubernetes-daemonset:{FLUENTD_VERSION}
         env:
-          - name:  FLUENT_ELASTICSEARCH_HOST
+          - name: FLUENT_ELASTICSEARCH_HOST
             value: "elasticsearch.kube-logging.svc.cluster.local"
-          - name:  FLUENT_ELASTICSEARCH_PORT
+          - name: FLUENT_ELASTICSEARCH_PORT
             value: "9200"
           - name: FLUENT_ELASTICSEARCH_SCHEME
             value: "http"
+          - name: FLUENT_ELASTICSEARCH_USER
+            value: "elastic"
+          - name: FLUENT_ELASTICSEARCH_PASSWORD
+            value: "changeme"
           - name: FLUENTD_SYSTEMD_CONF
             value: disable
           - name: FLUENT_ELASTICSEARCH_SED_DISABLE
