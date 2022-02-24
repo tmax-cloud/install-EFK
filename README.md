@@ -74,6 +74,12 @@
 		* ES_VERSION
 			* ElasticSearch의 버전
 			* ex) 7.2.1
+		* ELASTICSEARCH_USER
+			* ElasticSearch에서 설정할 superuser 이름
+			* ex) admin
+		* ELASTICSEARCH_PASSWORD
+			* ElasticSearch에서 설정할 superuser 비밀번호, 6자 이상으로 구성해야 한다.
+			* ex) elasticadmin
 		* KIBANA_VERSION
 			* KIBANA_VERSION의 버전
 			* ex) 7.2.0
