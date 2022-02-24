@@ -343,9 +343,9 @@ spec:
           - name: FLUENT_ELASTICSEARCH_SCHEME
             value: "http"
           - name: FLUENT_ELASTICSEARCH_USER
-            value: "elastic"
+            value: {ELASTIC_USERNAME}
           - name: FLUENT_ELASTICSEARCH_PASSWORD
-            value: "changeme"
+            value: {ELASTIC_PASSWORD}
           - name: FLUENTD_SYSTEMD_CONF
             value: disable
           - name: FLUENT_ELASTICSEARCH_SED_DISABLE
