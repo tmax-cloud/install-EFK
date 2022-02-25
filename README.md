@@ -223,7 +223,7 @@
 * Security > Users 메뉴에서 Create User를 클릭하여 Username과 Password, Roles를 설정하여 생성한다.
 ![image](figure/user-create.png)
 
-* Security > Roles 메뉴에서 Create Role를 클릭하여 Elasticsearch와 Kibana의 Custom role을 생성할 수 있다.
+* Security > Roles 메뉴에서 Create Role를 클릭하여 Elasticsearch와 Kibana에 대한 Custom role을 생성할 수 있다.
 ![image](figure/role-create.png)
 
 * 보다 자세한 Role 설정 방법은 Elastic 공식 사이트에서 제공하는 가이드를 참조.
