@@ -71,7 +71,7 @@ set +e
 export ES_IP=`kubectl get svc -n kube-logging | grep elasticsearch | tr -s ' ' | cut -d ' ' -f3`
 for ((i=0; i<11; i++))
 do
-  curl -XGET http://$ES_IP:9200/_cat/indices/
+  curl -XGET http://$ES_IP:9200/_cat/indices/ -u $ELASTICSEARCH_USER:$ELASTICSEARCH_PASSWORD
   is_success=`echo $?`
   if [ $is_success == 0 ]; then
     break
@@ -123,7 +123,7 @@ sleep 5s
 set +e
 for ((i=0; i<11; i++))
 do
-  is_success=`curl -XGET http://$ES_IP:9200/_cat/indices/`
+  is_success=`curl -XGET http://$ES_IP:9200/_cat/indices/ -u $ELASTICSEARCH_USER:$ELASTICSEARCH_PASSWORD`
 
   if [[ "$is_success" == *".kibana"* ]]; then
     break
@@ -141,14 +141,14 @@ echo " "
 echo "---Wait until Kibana makes an alias normally---"
 for ((i=0; i<11; i++))
 do
-  is_success=`curl -XGET http://$ES_IP:9200/_alias`
+  is_success=`curl -XGET http://$ES_IP:9200/_alias -u $ELASTICSEARCH_USER:$ELASTICSEARCH_PASSWORD`
   is_kibana_normal=`kubectl get pod -n kube-logging | grep kibana | tr -s ' ' | cut -d ' ' -f4`
 
   if [[ "$is_success" == *".kibana_1"* ]]; then
     break
   elif [ $is_kibana_normal != 0 ]; then
     echo "make an index manually by curl command"
-    curl -XPUT http://$ES_IP:9200/.kibana_1/_alias/.kibana
+    curl -XPUT http://$ES_IP:9200/.kibana_1/_alias/.kibana -u $ELASTICSEARCH_USER:$ELASTICSEARCH_PASSWORD
   elif [ $i == 10 ]; then
     echo "Timeout. Failed to make a alias for kibana index"
     exit 1
@@ -169,7 +169,7 @@ export KIBANA_IP=`kubectl get svc -n kube-logging | grep kibana | tr -s ' ' | cu
 
 for ((i=0; i<11; i++))
 do
-  is_success=`curl -XGET http://$ES_IP:9200/_cat/indices/`
+  is_success=`curl -XGET http://$ES_IP:9200/_cat/indices/ -u $ELASTICSEARCH_USER:$ELASTICSEARCH_PASSWORD`
 
   if [[ "$is_success" == *"logstash"* ]]; then
     break
@@ -185,7 +185,7 @@ echo "logstash index was made in ElasticSearch"
 
 for ((i=0; i<11; i++))
 do
-  is_success=`curl -XGET http://$KIBANA_IP:5601/api/kibana/status -I`
+  is_success=`curl -XGET http://$KIBANA_IP:5601/api/kibana/status -I -u $ELASTICSEARCH_USER:$ELASTICSEARCH_PASSWORD`
 
   if [[ "$is_success" == *"200 OK"* ]]; then
     break
@@ -198,8 +198,8 @@ do
   fi
 done
 echo "Kibana starts up successfully"
-curl -f -XPOST -H 'Content-Type: application/json' -H 'kbn-xsrf: anything' http://$KIBANA_IP:5601/api/kibana/api/saved_objects/index-pattern/logstash-* '-d{"attributes":{"title":"logstash-*","timeFieldName":"@timestamp"}}' 
-curl -XPOST -H "Content-Type: application/json" -H "kbn-xsrf: true" http://$KIBANA_IP:5601/api/kibana/api/kibana/settings/defaultIndex -d '{"value": "logstash-*"}'
+curl -f -XPOST -H 'Content-Type: application/json' -H 'kbn-xsrf: anything' -u $ELASTICSEARCH_USER:$ELASTICSEARCH_PASSWORD http://$KIBANA_IP:5601/api/kibana/api/saved_objects/index-pattern/logstash-* '-d{"attributes":{"title":"logstash-*","timeFieldName":"@timestamp"}}' 
+curl -XPOST -H "Content-Type: application/json" -H "kbn-xsrf: true" -u $ELASTICSEARCH_USER:$ELASTICSEARCH_PASSWORD http://$KIBANA_IP:5601/api/kibana/api/kibana/settings/defaultIndex -d '{"value": "logstash-*"}'
 set -e
 
 echo " "
