@@ -61,8 +61,8 @@ data:
     server.name: kibana
     server.host: "0"
     elasticsearch.hosts: [ "http://elasticsearch:9200" ]
-    elasticsearch.username: {ELASTICSEARCH_USER}
-    elasticsearch.password: {ELASTICSEARCH_PASSWORD}
+    elasticsearch.username: "{ELASTICSEARCH_USER}"
+    elasticsearch.password: "{ELASTICSEARCH_PASSWORD}"
     elasticsearch.requestTimeout: "100000ms"
 kind: ConfigMap
 metadata:
