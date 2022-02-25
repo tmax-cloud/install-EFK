@@ -6,6 +6,8 @@ pushd $SCRIPTDIR
 source ./efk.config
 
 echo "ES_VERSION = $ES_VERSION"
+echo "ELASTICSEARCH_USER = $ELASTICSEARCH_USER"
+echo "ELASTICSEARCH_PASSWORD = $ELASTICSEARCH_PASSWORD"
 echo "KIBANA_VERSION = $KIBANA_VERSION"
 echo "CUSTOM_DOMAIN_NAME = $CUSTOM_DOMAIN_NAME"
 echo "FLUENTD_VERSION = $FLUENTD_VERSION"
@@ -22,11 +24,17 @@ fi
 
 sed -i 's/{BUSYBOX_VERSION}/'${BUSYBOX_VERSION}'/g' 01_elasticsearch.yaml
 sed -i 's/{ES_VERSION}/'${ES_VERSION}'/g' 01_elasticsearch.yaml
+sed -i 's/{ELASTICSEARCH_USER}/'${ELASTICSEARCH_USER}'/g' 01_elasticsearch.yaml
+sed -i 's/{ELASTICSEARCH_PASSWORD}/'${ELASTICSEARCH_PASSWORD}'/g' 01_elasticsearch.yaml
 sed -i 's/{STORAGECLASS_NAME}/'${STORAGECLASS_NAME}'/g' 01_elasticsearch.yaml
 sed -i 's/{KIBANA_VERSION}/'${KIBANA_VERSION}'/g' 02_kibana.yaml
+sed -i 's/{ELASTICSEARCH_USER}/'${ELASTICSEARCH_USER}'/g' 02_kibana.yaml
+sed -i 's/{ELASTICSEARCH_PASSWORD}/'${ELASTICSEARCH_PASSWORD}'/g' 02_kibana.yaml
 sed -i 's/{CUSTOM_DOMAIN_NAME}/'${CUSTOM_DOMAIN_NAME}'/g' 02_kibana.yaml
 sed -i 's/{FLUENTD_VERSION}/'${FLUENTD_VERSION}'/g' 03_fluentd.yaml
 sed -i 's/{FLUENTD_VERSION}/'${FLUENTD_VERSION}'/g' 03_fluentd_cri-o.yaml
+sed -i 's/{ELASTICSEARCH_USER}/'${ELASTICSEARCH_USER}'/g' 03_fluentd_cri-o.yaml
+sed -i 's/{ELASTICSEARCH_PASSWORD}/'${ELASTICSEARCH_PASSWORD}'/g' 03_fluentd_cri-o.yaml
 
 if [ $REGISTRY != "{REGISTRY}" ]; then
   sed -i 's/docker.io\/tmaxcloudck\/elasticsearch/'${REGISTRY}'\/tmaxcloudck\/elasticsearch/g' 01_elasticsearch.yaml
