@@ -76,10 +76,10 @@
 			* ex) 7.2.1
 		* ELASTICSEARCH_USER
 			* ElasticSearch에서 설정할 superuser 이름
-			* ex) admin
+			* ex) esadmin
 		* ELASTICSEARCH_PASSWORD
 			* ElasticSearch에서 설정할 superuser 비밀번호, 6자 이상으로 구성해야 한다.
-			* ex) elasticadmin
+			* ex) esadmin
 		* KIBANA_VERSION
 			* KIBANA_VERSION의 버전
 			* ex) 7.2.0
@@ -139,8 +139,10 @@
     $ export BUSYBOX_VERSION=1.32.0
     $ export STORAGECLASS_NAME=csi-cephfs-sc
     ```
-    * Ingress 관련 스펙을 export 한다.
+    * Basic auth 설정 및 Ingress 관련 스펙을 export 한다.
     ```bash
+    $ export ELASTICSEARCH_USER=esadmin
+    $ export ELASTICSEARCH_PASSWORD=esadmin
     $ export CUSTOM_DOMAIN_NAME=tmaxcloud.org
     ```
 
@@ -160,11 +162,17 @@
 	```bash
 	$ sed -i 's/{BUSYBOX_VERSION}/'${BUSYBOX_VERSION}'/g' 01_elasticsearch.yaml
 	$ sed -i 's/{ES_VERSION}/'${ES_VERSION}'/g' 01_elasticsearch.yaml
+	$ sed -i 's/{ELASTICSEARCH_USER}/'${ELASTICSEARCH_USER}'/g' 01_elasticsearch.yaml
+	$ sed -i 's/{ELASTICSEARCH_PASSWORD}/'${ELASTICSEARCH_PASSWORD}'/g' 01_elasticsearch.yaml
 	$ sed -i 's/{STORAGECLASS_NAME}/'${STORAGECLASS_NAME}'/g' 01_elasticsearch.yaml
 	$ sed -i 's/{KIBANA_VERSION}/'${KIBANA_VERSION}'/g' 02_kibana.yaml
+	$ sed -i 's/{ELASTICSEARCH_USER}/'${ELASTICSEARCH_USER}'/g' 02_kibana.yaml
+	$ sed -i 's/{ELASTICSEARCH_PASSWORD}/'${ELASTICSEARCH_PASSWORD}'/g' 02_kibana.yaml
 	$ sed -i 's/{CUSTOM_DOMAIN_NAME}/'${CUSTOM_DOMAIN_NAME}'/g' 02_kibana.yaml
 	$ sed -i 's/{FLUENTD_VERSION}/'${FLUENTD_VERSION}'/g' 03_fluentd.yaml
   	$ sed -i 's/{FLUENTD_VERSION}/'${FLUENTD_VERSION}'/g' 03_fluentd_cri-o.yaml
+	$ sed -i 's/{ELASTICSEARCH_USER}/'${ELASTICSEARCH_USER}'/g' 03_fluentd_cri-o.yaml
+	$ sed -i 's/{ELASTICSEARCH_PASSWORD}/'${ELASTICSEARCH_PASSWORD}'/g' 03_fluentd_cri-o.yaml
 	```
 * 비고 :
     * `폐쇄망에서 설치를 진행하여 별도의 image registry를 사용하는 경우 registry 정보를 추가로 설정해준다.`
@@ -183,12 +191,7 @@
 	```bash
 	$ kubectl apply -f 01_elasticsearch.yaml
 	```     
-* 비고 :
-    * StorageClass 이름이 csi-cephfs-sc가 아니라면 환경에 맞게 수정해야 한다.
-    * Elasticsearch 7.16.1 version에서 downgrade 적용 시 error: cannot downgrade a node from version [7.16.1] to [7.2.0] 대응
-    	* 기존 elasticsearch cluster의 persistentVolumeClaim 삭제 후 yaml 재실행
-    	* ex) kubectl delete pvc data-es-cluster-0 -n kube-logging
-
+	
 ## Step 2. Kibana 설치
 * 목적 : `EFK의 UI 모듈인 kibana를 설치`
 * 생성 순서 : [02_kibana.yaml](yaml/02_kibana.yaml) 실행 
@@ -196,8 +199,10 @@
     $ kubectl apply -f 02_kibana.yaml
     ```
 * 비고 :
-    * kibana pod가 running임을 확인한 뒤 https://kibana.${CUSTOM_DOMAIN_NAME}/ 에 접속해 정상 동작을 확인한다.
+    * kibana pod가 running임을 확인한 뒤 https://kibana.${CUSTOM_DOMAIN_NAME}/ 에 접속한다.
+    * 설정한 $ELASTICSEARCH_USER와 $ELASTICSEARCH_PASSWORD로 로그인하여 정상 동작을 확인한다.
     * $CUSTOM_DOMAIN_NAME은 `kubectl get ingress -n kube-logging | grep kibana`를 통해 조회 가능
+![image](figure/kibana-login.png)
 ![image](figure/kibana-ui.png)   
 
 ## Step 3. Fluentd 설치
@@ -213,6 +218,18 @@
       ```bash
       $ kubectl apply -f 03_fluentd.yaml
       ```
+## Kibana UI에서 User 생성 및 인가
+* 목적: `superuser로 로그인하여 Kibana UI를 통해 새로운 user 생성 시 role을 부여`
+* Security > Users 메뉴에서 Create User를 클릭하여 Username과 Password, Roles를 설정하여 생성한다.
+![image](figure/user-create.png)
+
+* Security > Roles 메뉴에서 Create Role를 클릭하여 Elasticsearch와 Kibana의 Custom role을 생성할 수 있다.
+![image](figure/role-create.png)
+
+* 보다 자세한 Role 설정 방법은 Elastic 공식 사이트에서 제공하는 가이드를 참조.
+    * [Tutorial: role-based access control](https://www.elastic.co/guide/en/kibana/7.2/space-rbac-tutorial.html)
+    * [Kibana role management](https://www.elastic.co/guide/en/kibana/7.2/kibana-role-management.html)
+
 ## 비고
 * ILM policy 설정
     * 설치 시, default로 생성되는 watch-history-ilm-policy를 적용시키게 되어있다.
@@ -250,9 +267,3 @@
                 "index.blocks.read_only_allow_delete": null
             }
             ```
-## 기타: HyperCloud5.0 EFK Spec 정보
-Namespace | Pod | Container | Request(CPU) | Request(Memory) | Limit(CPU) | Limit(Memory) 
---- | --- | --- | --- |--- |--- |--- 
-kube-logging | es-cluster | elasticsearch | 100m | 100Mi | 500m | 3000Mi  
-kube-logging | kibana | kibana | 500m | 1000Mi | 500m | 1000Mi 
-kube-logging | fluentd | fluentd | 50m | 100Mi | 300m | 512Mi  
