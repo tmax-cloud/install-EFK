@@ -1,6 +1,10 @@
 
 # EFK 설치 가이드
 
+## 개요
+* EFK는 Elasticsearch, Fluentd 그리고 Kibana 세 개의 플랫폼 조합으로 클러스터 환경에서의 로그 수집, 검색 그리고 시각화를 제공한다.
+*  각 k8s 클러스터에 fluentd가 daemonset으로 log를 수집하여 elasticsearch에 적재하면, elasticsearch는 요청에 따라 검색을 한다. kibana는 elasticsearch에 적재된 데이터를 사용자가 용이하게 사용할 수 있도록 시각화한다.
+
 ## 구성 요소 및 버전
 * elasticsearch ([docker.io/tmaxcloudck/elasticsearch:7.2.1](https://hub.docker.com/r/tmaxcloudck/elasticsearch/tags))
 * kibana ([docker.elastic.co/kibana/kibana:7.2.0](https://www.docker.elastic.co/r/kibana/kibana?limit=50&offset=0&show_snapshots=false))
