@@ -9,14 +9,14 @@ data:
 
     # log action execution errors for easier debugging
     logger.action.name = org.elasticsearch.action
-    logger.action.level = error
+    logger.action.level = error ### 원하는 로그 레벨로 변경
 
     appender.rolling.type = Console
     appender.rolling.name = rolling
     appender.rolling.layout.type = ESJsonLayout
     appender.rolling.layout.type_name = server
 
-    rootLogger.level = error
+    rootLogger.level = error ### 원하는 로그 레벨로 변경
     rootLogger.appenderRef.rolling.ref = rolling
 
     appender.deprecation_rolling.type = Console
@@ -25,7 +25,7 @@ data:
     appender.deprecation_rolling.layout.type_name = deprecation
 
     logger.deprecation.name = org.elasticsearch.deprecation
-    logger.deprecation.level = error
+    logger.deprecation.level = error ### 원하는 로그 레벨로 변경
     logger.deprecation.appenderRef.deprecation_rolling.ref = deprecation_rolling
     logger.deprecation.additivity = false
 
@@ -35,7 +35,7 @@ data:
     appender.index_search_slowlog_rolling.layout.type_name = index_search_slowlog
 
     logger.index_search_slowlog_rolling.name = index.search.slowlog
-    logger.index_search_slowlog_rolling.level = error
+    logger.index_search_slowlog_rolling.level = error ### 원하는 로그 레벨로 변경
     logger.index_search_slowlog_rolling.appenderRef.index_search_slowlog_rolling.ref = index_search_slowlog_rolling
     logger.index_search_slowlog_rolling.additivity = false
 
@@ -45,6 +45,6 @@ data:
     appender.index_indexing_slowlog_rolling.layout.type_name = index_indexing_slowlog
 
     logger.index_indexing_slowlog.name = index.indexing.slowlog.index
-    logger.index_indexing_slowlog.level = error
+    logger.index_indexing_slowlog.level = error ### 원하는 로그 레벨로 변경
     logger.index_indexing_slowlog.appenderRef.index_indexing_slowlog_rolling.ref = index_indexing_slowlog_rolling
     logger.index_indexing_slowlog.additivity = false
