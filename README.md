@@ -340,7 +340,7 @@ ex2) 01_elasicsearch.yaml opensearch-log4j-config 마운트 적용 예시
         #logging.verbose: false ## log_level: trace/debug에 유사한 output
 	```
 
-* GateKeeper: Debug, Info, Warn, Error, Fatal, Panic 총 6단계로 구성, gatekeeper container의 args의 --log-level에 원하는 로그 레벨을 적용하여 설정할 수 있다.]
+* GateKeeper: Debug, Info, Warn, Error, Fatal, Panic 총 6단계로 구성, gatekeeper container의 args의 --log-level에 원하는 로그 레벨을 적용하여 설정할 수 있다.
 
     ex) gatekeeper container args 수정 예시, log level error 설정
     
