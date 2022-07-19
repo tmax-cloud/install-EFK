@@ -307,7 +307,7 @@ ex1) es-log4j2-config (log4j2.properties) Configmap 예시
                logger.index_search_slowlog_rolling.additivity = false
 		
 	
-ex2) 01_elasicsearch.yaml opensearch-log4j-config 마운트 적용 예시
+ex2) 01_elasicsearch.yaml es-log4j-config 마운트 적용 예시
 	
 	  
 	    ```
