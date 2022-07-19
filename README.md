@@ -8,7 +8,7 @@
 ## 구성 요소 및 버전
 * elasticsearch ([docker.io/tmaxcloudck/elasticsearch:7.2.1](https://hub.docker.com/r/tmaxcloudck/elasticsearch/tags))
 * kibana ([docker.elastic.co/kibana/kibana:7.2.0](https://www.docker.elastic.co/r/kibana/kibana?limit=50&offset=0&show_snapshots=false))
-  * gatekeeper sidecar ([quay.io/keycloak/keycloak-gatekeeper:10.0.0](https://quay.io/repository/keycloak/keycloak-gatekeeper))
+  * gatekeeper sidecar ([docker.io/tmaxcloudck/gatekeeper:v1.0.2](https://hub.docker.com/r/tmaxcloudck/gatekeeper/tags))
 * fluentd ([fluent/fluentd-kubernetes-daemonset:v1.4.2-debian-elasticsearch-1.1](https://hub.docker.com/layers/fluent/fluentd-kubernetes-daemonset/v1.4.2-debian-elasticsearch-1.1/images/sha256-ce4885865850d3940f5e5318066897b8502c0b955066392de7fd4ef6f1fd4275?context=explore))
 * busybox ([busybox:1.32.0](https://hub.docker.com/layers/busybox/library/busybox/1.32.0/images/sha256-414aeb860595d7078cbe87abaeed05157d6b44907fbd7db30e1cfba9b6902448?context=explore))
 
@@ -39,7 +39,7 @@
     $ cd $EFK_HOME
     $ export ES_VERSION=7.2.1
     $ export KIBANA_VERSION=7.2.0
-    $ export GATEKEEPER_VERSION=10.0.0
+    $ export GATEKEEPER_VERSION=v1.0.2
     $ export FLUENTD_VERSION=v1.4.2-debian-elasticsearch-1.1
     $ export BUSYBOX_VERSION=1.32.0
     $ export REGISTRY={ImageRegistryIP:Port}
@@ -50,8 +50,8 @@
     $ sudo docker save docker.io/tmaxcloudck/elasticsearch:${ES_VERSION} > elasticsearch_${ES_VERSION}.tar
     $ sudo docker pull docker.elastic.co/kibana/kibana:${KIBANA_VERSION}
     $ sudo docker save docker.elastic.co/kibana/kibana:${KIBANA_VERSION} > kibana_${KIBANA_VERSION}.tar
-    $ sudo docker pull quay.io/keycloak/keycloak-gatekeeper:${GATEKEEPER_VERSION}
-    $ sudo docker save quay.io/keycloak/keycloak-gatekeeper:${GATEKEEPER_VERSION} > gatekeeper_${GATEKEEPER_VERSION}.tar
+    $ sudo docker pull docker.io/tmaxcloudck/gatekeeper::${GATEKEEPER_VERSION}
+    $ sudo docker save docker.io/tmaxcloudck/gatekeeper::${GATEKEEPER_VERSION} > gatekeeper_${GATEKEEPER_VERSION}.tar
     $ sudo docker pull fluent/fluentd-kubernetes-daemonset:${FLUENTD_VERSION}
     $ sudo docker save fluent/fluentd-kubernetes-daemonset:${FLUENTD_VERSION} > fluentd_${FLUENTD_VERSION}.tar
     $ sudo docker pull busybox:${BUSYBOX_VERSION}
@@ -68,13 +68,13 @@
     
     $ sudo docker tag docker.io/tmaxcloudck/elasticsearch:${ES_VERSION} ${REGISTRY}/tmaxcloudck/elasticsearch:${ES_VERSION}
     $ sudo docker tag docker.elastic.co/kibana/kibana:${KIBANA_VERSION} ${REGISTRY}/kibana/kibana:${KIBANA_VERSION}
-    $ sudo docker tag quay.io/keycloak/keycloak-gatekeeper:${GATEKEEPER_VERSION} ${REGISTRY}/keycloak/keycloak-gatekeeper:${GATEKEEPER_VERSION}
+    $ sudo docker tag docker.io/tmaxcloudck/gatekeeper:${GATEKEEPER_VERSION} ${REGISTRY}/tmaxcloudck/gatekeeper:${GATEKEEPER_VERSION}
     $ sudo docker tag fluent/fluentd-kubernetes-daemonset:${FLUENTD_VERSION} ${REGISTRY}/fluentd-kubernetes-daemonset:${FLUENTD_VERSION}
     $ sudo docker tag busybox:${BUSYBOX_VERSION} ${REGISTRY}/busybox:${BUSYBOX_VERSION}
     
     $ sudo docker push ${REGISTRY}/tmaxcloudck/elasticsearch:${ES_VERSION}
     $ sudo docker push ${REGISTRY}/kibana/kibana:${KIBANA_VERSION}
-    $ sudo docker push ${REGISTRY}/keycloak/keycloak-gatekeeper:${GATEKEEPER_VERSION}
+    $ sudo docker push ${REGISTRY}/tmaxcloudck/gatekeeper:${GATEKEEPER_VERSION}
     $ sudo docker push ${REGISTRY}/fluentd-kubernetes-daemonset:${FLUENTD_VERSION}
     $ sudo docker push ${REGISTRY}/busybox:${BUSYBOX_VERSION}
     ```
@@ -115,7 +115,7 @@
 			* ex) 7.2.0
 		* GATEKEEPER_VERSION
 			* Gatekeeper 의 버전
-			* ex) 10.0.0
+			* ex) v1.0.2
         * HYPERAUTH_URL
             * Hyperauth 의 URL
             * ex) hyperauth.org
@@ -178,7 +178,7 @@
     ```bash
     $ export ES_VERSION=7.2.1
     $ export KIBANA_VERSION=7.2.0
-    $ export GATEKEEPER_VERSION=10.0.0
+    $ export GATEKEEPER_VERSION=v1.0.2
     $ export FLUENTD_VERSION=v1.4.2-debian-elasticsearch-1.1
     $ export BUSYBOX_VERSION=1.32.0
     $ export STORAGECLASS_NAME=csi-cephfs-sc
@@ -224,7 +224,7 @@
 	$ sed -i 's/docker.io\/tmaxcloudck\/elasticsearch/'${REGISTRY}'\/tmaxcloudck\/elasticsearch/g' 01_elasticsearch.yaml
 	$ sed -i 's/busybox/'${REGISTRY}'\/busybox/g' 01_elasticsearch.yaml
 	$ sed -i 's/docker.elastic.co\/kibana\/kibana/'${REGISTRY}'\/kibana\/kibana/g' 02_kibana.yaml
-    $ sed -i 's/quay.io\/keycloak\/keycloak-gatekeeper/'${REGISTRY}'\/keycloak\/keycloak-gatekeeper/g' 02_kibana.yaml
+    $ sed -i 's/docker.io\/tmaxcloudck\/gatekeeper/'${REGISTRY}'\/tmaxcloudck\/gatekeeper/g' 02_kibana.yaml
 	$ sed -i 's/fluent\/fluentd-kubernetes-daemonset/'${REGISTRY}'\/fluentd-kubernetes-daemonset/g' 03_fluentd.yaml
 	$ sed -i 's/fluent\/fluentd-kubernetes-daemonset/'${REGISTRY}'\/fluentd-kubernetes-daemonset/g' 03_fluentd_cri-o.yaml
 	```    
@@ -277,6 +277,102 @@
     ![image](figure/multiple-index.png)
     
 ## 비고
+### Elasticsearch와 Kibana, Gatekeeper, fluentd 모듈의 log level 설정
+* Elasticsearch: Apache Log4j를 사용하며 TRACE, DEBUG, INFO, WARN, ERROR, FATAL 총 6단계로, default로 설정된 log level은 INFO이다.
+     * log level 설정은 config를 수정하는 방법과 kibana ui에서 query를 보내어 설정하는 방법, log4j2.properties를 수정하는 방법이 있다.
+     * 현재 config를 수정하는 방법과 kibana ui에서 접근하여 설정하는 방법이 제대로 적용되지 않는 것을 확인하여 log4j2.properties를 수정하는 방법을 안내한다.  
+     * log4j2.properties를 수정하는 방법: [es-log4j2-config](yaml/es-log4j2-config.yaml) Configmap을 예시와 같이 원하는 로그 레벨로 입력하여 추가시킨 후, es에 mount시켜 적용한다.
+
+ex1) es-log4j2-config (log4j2.properties) Configmap 예시
+            
+             log4j2.properties: |
+               status = error
+
+               rootLogger.level = error  ### 원하는 로그 레벨로 변경
+               rootLogger.appenderRef.console.ref = console
+	       
+	       logger.deprecation.name = org.elasticsearch.deprecation
+               logger.deprecation.level = error  ### 원하는 로그 레벨로 변경
+               logger.deprecation.appenderRef.deprecation_rolling.ref = deprecation_rolling
+               logger.deprecation.additivity = false
+
+	       logger.index_search_slowlog_rolling.name = index.search.slowlog
+               logger.index_search_slowlog_rolling.level = error  ### 원하는 로그 레벨로 변경
+               logger.index_search_slowlog_rolling.appenderRef.index_search_slowlog_rolling.ref = index_search_slowlog_rolling
+               logger.index_search_slowlog_rolling.additivity = false
+	       
+	       logger.index_search_slowlog_rolling.name = index.search.slowlog
+               logger.index_search_slowlog_rolling.level = error  ### 원하는 로그 레벨로 변경
+               logger.index_search_slowlog_rolling.appenderRef.index_search_slowlog_rolling.ref = index_search_slowlog_rolling
+               logger.index_search_slowlog_rolling.additivity = false
+		
+	
+ex2) 01_elasicsearch.yaml opensearch-log4j-config 마운트 적용 예시
+	
+	  
+	    ```
+	     volumeMounts:
+	     - name: log4j2
+               mountPath: /usr/share/elasticsearch/config/log4j2.properties
+               subPath: log4j2.properties
+	       
+	     ...
+	     
+	     volumes:
+	     - name: log4j2
+               configMap:
+               name: es-log4j2-config
+
+	     ```
+* Kibana: Elasticsearch와는 다르게 log level을 지정하여 설정하지 않고 config 설정에서 원하는 log 설정에 true/false를 적용한다.
+        
+	ex) kibana-config (kibana.yml) Configmap 예시
+	
+	```
+	    # Set the value of this setting to true to suppress all logging output.
+        #logging.silent: false
+
+        # Set the value of this setting to true to suppress all logging output other than error messages.
+        #logging.quiet: false  ## log_level: warn/error 에 유사한 output
+
+        # Set the value of this setting to true to log all events, including system usage information
+        # and all requests.
+        #logging.verbose: false ## log_level: trace/debug에 유사한 output
+	```
+
+* GateKeeper: Debug, Info, Warn, Error, Fatal, Panic 총 6단계로 구성, gatekeeper container의 args의 --log-level에 원하는 로그 레벨을 적용하여 설정할 수 있다.]
+
+    ex) gatekeeper container args 수정 예시, log level error 설정
+    
+            containers:
+            - name: gatekeeper
+              image: docker.io/tmaxcloudck/gatekeeper:{GATEKEEPER_VERSION}
+              imagePullPolicy: Always
+              args:
+              - --client-id=kibana
+              - --client-secret={KIBANA_CLIENT_SECRET}
+              - --listen=:3000
+
+              ... 
+	      
+              - --encryption-key={ENCRYPTION_KEY}
+              - --resources=uri=/*|roles=kibana:kibana-manager
+              - --log-level=error  ### 원하는 로그 레벨로 변경
+
+
+* Fluentd: logger class는 fatal, error, warn, info, debug, trace 총 6단계로 구성되며 default log level 은 info이다. fluentd cli를 사용하거나 config file 을 통해서 수정 가능
+    * config를 통한 log level 설정에 오류가 있어 fluentd command에 옵션을 추가하여 변경하는 방법을 안내한다.
+    * [03_fluentd_cri-o.yaml](yaml/03_fluentd_cri-o.yaml)의 Daemonset에서 command에 원하는 log level에 맞는 옵션을 추가한다.
+    * log level 별 옵션 참조: https://docs.fluentd.org/deployment/logging#by-command-line-option
+    
+    ex) fluentd Daemonset command 수정 예시, log level error 설정 (-qq 옵션 추가)
+    
+	     containers:
+             - name: fluentd
+               image: fluent/fluentd-kubernetes-daemonset:{FLUENTD_VERSION}        
+               command: ["/bin/bash", "-c", "fluentd -qq -c /fluentd/etc/fluent.conf -p /fluentd/plugins"]
+
+
 * Fluentd에서 수집하는 로그 필드 설정
     * fluentd.yaml 파일 Configmap의 kubernetes.conf에 filter 설정을 추가로 적용하여 로그 필드를 삭제할 수 있다.
     * 주의: 삭제된 로그 필드는 elasticsearch에 적재되지 않는다.
